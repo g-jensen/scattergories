@@ -1,0 +1,3 @@
+{:migrations-ns scattergories.db.migrations
+ :full-schema   scattergories.schema.full/full-schema
+ :config-var    scattergories.config/bucket}

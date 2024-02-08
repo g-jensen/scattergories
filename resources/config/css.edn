@@ -1,0 +1,7 @@
+{
+ :source-dir  "dev/scattergories/styles"
+ :var         scattergories.styles.main/screen
+ :output-file "resources/public/css/scattergories.css"
+ :flags       {:pretty-print? true
+               :vendors       ["webkit" "moz" "o"]}
+ }

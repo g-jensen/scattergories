@@ -1,0 +1,41 @@
+{:ns-prefix   "scattergories"
+ :ignore-errors ["goog/i18n/bidi.js"]
+ :env-keys    ["cc.env" "CC_ENV"]
+ :run-cmd     "node resources/public/specs/speclj.js"
+ :development {:cache-analysis true
+               :optimizations  :none
+               :output-dir     "resources/public/cljs/"
+               :output-to      "resources/public/cljs/scattergories_dev.js"
+               :pretty-print   true
+               :source-map     true
+               :sources        ["spec/cljc" "spec/cljs" "src/cljc" "src/cljs"]
+               :specs          true
+               :verbose        false
+               :watch-fn       c3kit.scaffold.cljs/on-dev-compiled
+               :parallel-build true
+               }
+ :production  {
+               :cache-analysis false
+               :externs        ["dev/scattergories/externs/gapi.js"]
+               :infer-externs  true
+               :optimizations  :advanced
+               :output-dir     "resources/public/cljs/"
+               :output-to      "resources/public/cljs/scattergories.js"
+               :pretty-print   false
+               :sources        ["src/cljc" "src/cljs"]
+               :specs          false
+               :verbose        false
+               }
+ :staging     {
+               :cache-analysis false
+               :infer-externs  true
+               :optimizations  :whitespace
+               :output-dir     "resources/public/cljs/"
+               :output-to      "resources/public/cljs/scattergories.js"
+               :pretty-print   true
+               :pseudo-names   true
+               :sources        ["src/cljc" "src/cljs"]
+               :specs          false
+               :verbose        false
+               }
+ }
