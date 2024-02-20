@@ -2,6 +2,7 @@
   (:require [c3kit.bucket.api :as db]
             [c3kit.bucket.spec-helperc :as helperc]
             [scattergories.room :as sut]
+            [scattergories.roomc :as roomc]
             [scattergories.schema.room :as room]
             [speclj.core :refer :all]))
 
@@ -25,4 +26,9 @@
 
     (it "saves room to db"
       (sut/ws-create-room {})
-      (should-not-be-nil (db/ffind-by :room :code "89ABCD")))))
+      (should-not-be-nil (db/ffind-by :room :code "89ABCD")))
+
+    (it "does not duplicate room codes"
+      (db/tx (roomc/->room "89ABCD"))
+      (sut/ws-create-room {})
+      (should-not-be-nil (db/ffind-by :room :code "EFHJKL")))))

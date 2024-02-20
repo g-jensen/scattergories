@@ -1,5 +1,6 @@
 (ns scattergories.room
-  (:require [c3kit.bucket.api :as db]
+  (:require [c3kit.apron.corec :as ccc]
+            [c3kit.bucket.api :as db]
             [scattergories.roomc :as roomc]))
 
 (def rooms (atom {}))
@@ -14,6 +15,13 @@
     (take 6)
     (apply str)))
 
+(defn unused-code []
+  (->> (repeatedly new-code)
+       (remove #(db/ffind-by :room :code %))
+       first))
+
+
 (defn ws-create-room [{:keys [params] :as request}]
-  (let [room (roomc/->room (new-code))]
+  (let [code (unused-code)
+        room (roomc/->room code)]
     (db/tx room)))
