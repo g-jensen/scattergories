@@ -1,4 +1,6 @@
-(ns scattergories.room)
+(ns scattergories.room
+  (:require [c3kit.bucket.api :as db]
+            [scattergories.roomc :as roomc]))
 
 (def rooms (atom {}))
 
@@ -8,13 +10,10 @@
     (remove #{\O \0 \1 \I \G \g})))
 
 (defn new-code []
-  (let [code (->> (repeatedly #(rand-nth code-chars))
-               (take 6)
-               (apply str))]
-    (if-not (some #{code} (keys @rooms))
-      code
-      (new-code))))
-
+  (->> (repeatedly #(rand-nth code-chars))
+    (take 6)
+    (apply str)))
 
 (defn ws-create-room [{:keys [params] :as request}]
-  (prn "request" request))
+  (let [room (roomc/->room (new-code))]
+    (db/tx room)))

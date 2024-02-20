@@ -12,6 +12,9 @@
    :entries {:type [:string]}})
 
 (def room
-  {:kind    (s/kind :room)
-   :players {:type [player]}
-   :lists   {:type [categories]}})
+  {:kind (s/kind :room)
+   :id   s/id
+   :code {:type :string :validate s/present? :message "must be present"}
+   })
+
+(def all [room])

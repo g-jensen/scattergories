@@ -6,7 +6,8 @@
    :analytics-code "console.log('google analytics would have loaded for this page');"
    :log-level      :info})
 
-(def bucket {:impl :memory})
+(def bucket {:impl        :memory
+             :full-schema 'scattergories.schema.full/full-schema})
 
 (def development
   (assoc base
