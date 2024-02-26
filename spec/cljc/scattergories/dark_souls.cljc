@@ -3,10 +3,12 @@
             [c3kit.bucket.spec-helperc :as helperc]
             [scattergories.roomc :as roomc]
             [scattergories.schema.room :as room.schema]
+            [scattergories.schema.player :as player.schema]
             [speclj.core #?(:clj :refer :cljs :refer-macros) [before]])
-  (:import (clojure.lang IDeref)))
+  #?(:clj (:import (clojure.lang IDeref))))
 
-(def schemas [room.schema/all])
+(def schemas [room.schema/all
+              player.schema/all])
 
 (def firelink-atom (atom nil))
 

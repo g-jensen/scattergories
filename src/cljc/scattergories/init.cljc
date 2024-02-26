@@ -8,10 +8,12 @@
             [c3kit.wire.api :as api]
             [scattergories.config :as config]
             [scattergories.schema.full :as schema]
+            [scattergories.schema.player :as player]
             [scattergories.schema.room :as room]))
 
 (defn install-legend! []
   (legend/init! {:room       room/room
+                 :player     player/player
                  :db/retract legend/retract
                  }))
 

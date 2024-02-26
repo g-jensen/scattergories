@@ -1,5 +1,7 @@
 (ns scattergories.schema.full
-  (:require [scattergories.schema.room :as room]))
+  (:require [scattergories.schema.room :as room]
+            [scattergories.schema.player :as player]))
 
 (def full-schema
-  [room/room])
+  [room/room
+   player/player])
