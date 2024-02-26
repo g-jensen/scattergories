@@ -1,7 +1,9 @@
 (ns scattergories.room-spec
-  (:require [c3kit.bucket.api :as db]
+  (:require [c3kit.apron.utilc :as utilc]
+            [c3kit.bucket.api :as db]
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
+            [scattergories.playerc :as playerc]
             [scattergories.room :as sut]
             [scattergories.roomc :as roomc]
             [scattergories.schema.player :as player]
@@ -31,14 +33,16 @@
 
     (it "saves room to db"
       (sut/ws-create-room {})
-      (should-not-be-nil (db/ffind-by :room :code "89ABCD")))
+      (should-not-be-nil (roomc/by-code "89ABCD")))
 
     (it "does not duplicate room codes"
       (db/tx (roomc/->room "89ABCD"))
       (sut/ws-create-room {})
-      (should-not-be-nil (db/ffind-by :room :code "EFHJKL"))))
+      (should-not-be-nil (roomc/by-code "EFHJKL"))))
 
   (context "ws-join-room"
+
+    (before (sut/create-room! "asylum"))
 
     (it "missing room"
       (let [response (sut/ws-join-room {:params {:nickname "Solaire"}})]
@@ -53,19 +57,27 @@
         (should= "Missing nickname!" (apic/flash-text response 0))))
 
     (it "first user to join becomes host"
-      (sut/create-room! "asylum")
       (let [response (sut/ws-join-room {:params {:nickname "Solaire" :room-code "asylum"}})]
         (should= :ok (:status response))
-        (let [player (db/ffind-by :player :nickname "Solaire")
-              room   (db/ffind-by :room :code "asylum")]
+        (let [player (playerc/by-nickname "Solaire")
+              room   (roomc/by-code "asylum")]
           (should-not-be-nil player)
           (should= (:id player) (:host room)))))
 
     (it "subsequent users joining do not become host"
-      (sut/create-room! "asylum")
       (sut/join-room! {:nickname "Solaire" :room-code "asylum"})
       (sut/join-room! {:nickname "Fire Keeper" :room-code "asylum"})
-      (let [player (db/ffind-by :player :nickname "Solaire")
-            room   (db/ffind-by :room :code "asylum")]
+      (let [player (playerc/by-nickname "Solaire")
+            room   (roomc/by-code "asylum")]
         (should-not-be-nil player)
-        (should= (:id player) (:host room))))))
+        (should= (:id player) (:host room))))
+
+    (it "stores users who have joined in order"
+      (sut/join-room! {:nickname "Solaire" :room-code "asylum"})
+      (sut/join-room! {:nickname "Fire Keeper" :room-code "asylum"})
+      (sut/join-room! {:nickname "Lautrec" :room-code "asylum"})
+      (let [room        (roomc/by-code "asylum")
+            solaire     (playerc/by-nickname "Solaire")
+            fire-keeper (playerc/by-nickname "Fire Keeper")
+            lautrec     (playerc/by-nickname "Lautrec")]
+        (should= (mapv :id [solaire fire-keeper lautrec]) (utilc/<-edn (:players room)))))))

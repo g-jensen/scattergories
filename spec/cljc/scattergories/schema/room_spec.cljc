@@ -7,4 +7,11 @@
 
   (it "code is required"
     (should= "must be present"
-      (->> {:kind :room} (schema/validate sut/room) schema/error-message-map :code))))
+      (->> {:kind :room} (schema/validate sut/room) schema/error-message-map :code)))
+
+  (it "players is required"
+    (should= "must be present"
+      (->> {:kind :room}
+           (schema/validate sut/room)
+           schema/error-message-map
+           :players))))

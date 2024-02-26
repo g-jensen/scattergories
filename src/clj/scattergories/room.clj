@@ -1,6 +1,5 @@
 (ns scattergories.room
-  (:require [c3kit.apron.corec :as ccc]
-            [c3kit.bucket.api :as db]
+  (:require [c3kit.bucket.api :as db]
             [c3kit.wire.apic :as apic]
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as roomc]))
@@ -36,12 +35,14 @@
 
 (defn join-room! [{:keys [nickname room-code]}]
   (let [player (db/tx (playerc/->player nickname))
-        room   (db/ffind-by :room :code room-code)]
-    (when (not (:host room))
-      (db/tx (assoc room :host (:id player))))
-    (apic/ok)))
+        room   (-> (db/ffind-by :room :code room-code)
+                   (roomc/add-player player))]
+    (if (not (:host room))
+        (db/tx (assoc room :host (:id player)))
+        (db/tx room))))
 
 (defn ws-join-room [{:keys [params] :as request}]
   (or (maybe-missing-room params)
       (maybe-missing-nickname params)
-      (join-room! params)))
+      (do (join-room! params)
+          (apic/ok))))
