@@ -7,7 +7,6 @@
             [c3kit.wire.flash :as flash]
             [c3kit.wire.js :as wjs]
             [scattergories.config :as config]
-            [scattergories.home]
             [scattergories.init :as init]
             [scattergories.layout :as layout]
             [scattergories.routes :as router]

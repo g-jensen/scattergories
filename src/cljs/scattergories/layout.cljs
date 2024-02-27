@@ -1,7 +1,9 @@
 (ns scattergories.layout
   (:require [scattergories.page :as page]
             [c3kit.wire.ajax :as ajax]
-            [c3kit.wire.flash :as flash]))
+            [c3kit.wire.flash :as flash]
+            [scattergories.home]
+            [scattergories.room]))
 
 (defn default []
   [:div#content
