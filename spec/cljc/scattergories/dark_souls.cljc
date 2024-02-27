@@ -16,6 +16,8 @@
 
 (def firelink-atom (atom nil))
 (def lautrec-atom (atom nil))
+(def frampt-atom (atom nil))
+(def patches-atom (atom nil))
 (def depths-atom (atom nil))
 
 (deftype Entity [atm]
@@ -24,13 +26,19 @@
 
 (def firelink (Entity. firelink-atom))                      ;; a populated room
 (def lautrec (Entity. lautrec-atom))                        ;; a player at firelink
+(def frampt (Entity. frampt-atom))                          ;; a player at firelink
+(def patches (Entity. patches-atom))                        ;; a player at firelink
 (def depths (Entity. depths-atom))                          ;; an empty room
 
 (defn init []
   (reset! firelink-atom (roomc/create-room! shrine-code))
   (reset! depths-atom (roomc/create-room! depths-code))
-  (reset! lautrec-atom (db/tx (playerc/->player "Lautrec")))
-  (db/tx (roomc/add-player @firelink @lautrec)))
+  (reset! lautrec-atom (db/tx (playerc/->player "Lautrec" "conn-lautrec")))
+  (reset! frampt-atom (db/tx (playerc/->player "Kingseeker Frampt" "conn-frampt")))
+  (reset! patches-atom (db/tx (playerc/->player "Patches" "conn-patches")))
+  (db/tx (roomc/add-player @firelink @lautrec))
+  (db/tx (roomc/add-player @firelink @frampt))
+  (db/tx (roomc/add-player @firelink @patches)))
 
 (defn with-schemas
   ([] (with-schemas schemas))
