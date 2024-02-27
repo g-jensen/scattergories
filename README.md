@@ -1,28 +1,4 @@
-# Clean Coders Starter App
-
-### Startup Project TODOs
-* spinner wired up with ajax/ws
-* user menu styles behavior
-* modal styles behavior
-* disabled button styles
-* forms specs/cleanup
-
-
-### Description
-This is a starter app.  Use it to start new projects with the Clean Coders stack.
-
-Steps to make this project unique:
-1. Rename all occurrences of `scattergories`
-2. Rename all occurrences of `Scattergories`
-3. Raname all directories (namespaces) named `scattergories`
-4. Update the `scattergories.test-data` namespace to your own fun and created theme.
-5. Update the `scattergories.config` clj namespace with a unique `:jwt-secret` for each environment
-
-A random set of characters can be generated using the `python3` REPL:
-
-    >>> import os
-    >>> os.urandom(24).hex()
-    '94badebb20b12f3de2238877d3d91c5ba388f9a65a2fa04e'
+# Scattergories
 
 ### Setup
 #### System Requirements 
