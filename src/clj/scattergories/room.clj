@@ -5,6 +5,11 @@
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as roomc]))
 
+(def lock (Object.))
+(defmacro with-lock [& body]
+  `(locking lock
+     ~@body))
+
 (def code-chars
   (->> (concat (range 48 58) (range 65 91))
     (map char)
@@ -21,8 +26,9 @@
        first))
 
 (defn ws-create-room [{:keys [params] :as request}]
-  (roomc/create-room! (unused-code))
-  (apic/ok))
+  (with-lock
+    (roomc/create-room! (unused-code))
+    (apic/ok)))
 
 (defn maybe-missing-room [{:keys [room-code] :as params}]
   (when-not room-code (apic/fail nil "Missing room!")))
@@ -44,6 +50,7 @@
         (create-and-join! room nickname connection-id))))
 
 (defn ws-join-room [{:keys [params connection-id] :as request}]
-  (or (maybe-missing-room params)
-      (maybe-missing-nickname params)
-      (assign-to-room! params connection-id)))
+  (with-lock
+    (or (maybe-missing-room params)
+        (maybe-missing-nickname params)
+        (assign-to-room! params connection-id))))
