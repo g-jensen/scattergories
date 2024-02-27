@@ -10,16 +10,19 @@
 (def schemas [room.schema/all
               player.schema/all])
 
+(def shrine-code "shrine")
+
 (def firelink-atom (atom nil))
+(def solaire-atom (atom nil))
 
 (deftype Entity [atm]
   #?(:clj IDeref :cljs cljs.core/IDeref)
   (#?(:clj deref :cljs -deref) [this] (db/reload @atm)))
 
-(def firelink (Entity. firelink-atom))                      ;; the room
+(def firelink (Entity. firelink-atom))                      ;; an empty room
 
 (defn init []
-  (reset! firelink-atom (roomc/->room "dacode")))
+  (reset! firelink-atom (roomc/create-room! shrine-code)))
 
 (defn with-schemas
   ([] (with-schemas schemas))

@@ -19,30 +19,21 @@
        (remove #(db/ffind-by :room :code %))
        first))
 
-(defn create-room! [code]
-  (let [code code
-        room (roomc/->room code)]
-    (db/tx room)))
-
 (defn ws-create-room [{:keys [params] :as request}]
-  (create-room! (unused-code))
+  (roomc/create-room! (unused-code))
   (apic/ok))
 
 (defn maybe-missing-room [{:keys [room-code] :as params}]
   (when-not room-code (apic/fail nil "Missing room!")))
+(defn maybe-nonexistent-room [room]
+  (when-not room (apic/fail nil "Room does not exist!")))
 (defn maybe-missing-nickname [{:keys [nickname] :as params}]
   (when-not nickname (apic/fail nil "Missing nickname!")))
-
-(defn join-room! [{:keys [nickname room-code]}]
-  (let [player (db/tx (playerc/->player nickname))
-        room   (-> (db/ffind-by :room :code room-code)
-                   (roomc/add-player player))]
-    (if (not (:host room))
-        (db/tx (assoc room :host (:id player)))
-        (db/tx room))))
 
 (defn ws-join-room [{:keys [params] :as request}]
   (or (maybe-missing-room params)
       (maybe-missing-nickname params)
-      (do (join-room! params)
-          (apic/ok))))
+      (let [room (db/ffind-by :room :code (:room-code params))]
+        (or (maybe-nonexistent-room room)
+            (do (roomc/join-room! room (:nickname params))
+                (apic/ok))))))

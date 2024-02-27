@@ -8,12 +8,24 @@
    :code    code
    :players "[]"})
 
+(defn create-room! [code]
+  (let [code code
+        room (->room code)]
+    (db/tx room)))
+
 (defn add-player [{:keys [players] :as room} player]
   (let [id      (playerc/or-id player)
         players (-> (utilc/<-edn players)
                     (conj id)
                     utilc/->edn)]
     (assoc room :players players)))
+
+(defn join-room! [room nickname]
+  (let [player (db/tx (playerc/->player nickname))
+        room   (add-player room player)]
+    (if (not (:host room))
+      (db/tx (assoc room :host (:id player)))
+      (db/tx room))))
 
 (defn by-code [code]
   (db/ffind-by :room :code code))
