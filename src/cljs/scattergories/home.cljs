@@ -5,4 +5,12 @@
 
 
 (defmethod page/render :home [_]
-  [:h1 "hi"])
+  [:div.homepage-container
+   [:h1 "Welcome to Scattergories"]
+   [:div.nickname-input
+    [:input {:type "text" :id "nickname" :placeholder "Enter your nickname"}]]
+   [:div.room-actions
+    [:input {:type "text" :id "roomCode" :placeholder "Room Code"}]]
+   [:div.room-actions
+    [:button {:id "joinRoom"} "Join Room"]
+    [:button {:id "createRoom"} "Create Room"]]])

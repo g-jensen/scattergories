@@ -21,27 +21,27 @@
 (garden/defstyles screen
 
 ; Layout
-reset/screen
+;reset/screen
 document/screen
-page/screen
-structure/screen
+;page/screen
+;structure/screen
 mini-classes/screen
 
 ; Elements
-typography/screen
-forms/screen
-lists/screen
-media/screen
-tables/screen
+;typography/screen
+;forms/screen
+;lists/screen
+;media/screen
+;tables/screen
 
 ; Componenents
 menus/screen
 
 ; Pages
-authentication/screen
+;authentication/screen
 
 ; Media
-responsive/screen
+;responsive/screen
 
 ; Fonts
 core/fonts
