@@ -30,11 +30,17 @@
 (defn maybe-missing-nickname [{:keys [nickname] :as params}]
   (when-not nickname (apic/fail nil "Missing nickname!")))
 
+(defn create-and-join! [room nickname]
+  (let [player (playerc/create-player! nickname)]
+    (->> [(roomc/join-room! room player) player]
+         (apic/ok))))
+
+(defn assign-to-room! [{:keys [room-code nickname]}]
+  (let [room (db/ffind-by :room :code room-code)]
+    (or (maybe-nonexistent-room room)
+        (create-and-join! room nickname))))
+
 (defn ws-join-room [{:keys [params] :as request}]
   (or (maybe-missing-room params)
       (maybe-missing-nickname params)
-      (let [room (db/ffind-by :room :code (:room-code params))
-            player (playerc/create-player! (:nickname params))]
-        (or (maybe-nonexistent-room room)
-            (->> [(roomc/join-room! room player) player]
-                (apic/ok))))))
+      (assign-to-room! params)))

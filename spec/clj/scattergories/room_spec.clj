@@ -56,12 +56,12 @@
         (should-be-nil (:payload response))
         (should= "Missing nickname!" (apic/flash-text response 0))))
 
-    ; TODO - do not create player
     (it "room does not exist"
       (let [response (sut/ws-join-room {:params {:nickname "Solaire" :room-code "parish"}})]
         (should= :fail (:status response))
         (should-be-nil (:payload response))
-        (should= "Room does not exist!" (apic/flash-text response 0))))
+        (should= "Room does not exist!" (apic/flash-text response 0))
+        (should-be-nil (playerc/by-nickname "Solaire"))))
 
     (it "joins room"
       (let [response (sut/ws-join-room {:params {:nickname "Sewer Rat" :room-code ds/depths-code}})]
