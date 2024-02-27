@@ -23,7 +23,7 @@
 ; Layout
 ;reset/screen
 document/screen
-;page/screen
+page/screen
 ;structure/screen
 mini-classes/screen
 
@@ -44,6 +44,6 @@ menus/screen
 ;responsive/screen
 
 ; Fonts
-core/fonts
+;core/fonts
 
 )
