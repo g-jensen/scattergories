@@ -28,22 +28,6 @@ CSS and Javascript need to be compiled:
     # compile cljs and run tests when ever a file changes
     clj -M:test:cljs
 
-For production:
-
-    CC_ENV=production clj -M:test:css once
-    CC_ENV=production clj -M:test:cljs once
-
-### Database Setup
-
-    # Run the Scattergories database
-    bin/db
-
-    # Run Migrations
-    clj -M:test:migrate
-
-    # Seed Development Database
-    clj -M:test:seed
-
 ### Running tests
 
     # clojure specs:
