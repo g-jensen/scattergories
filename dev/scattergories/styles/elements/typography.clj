@@ -6,38 +6,38 @@
 (list
 
 [:h1 {
-  :font-family (font-family "open-sans" "regular")
+  :font-family font-family
   :font-size size-plus-4
   :line-height size-plus-4
 }]
 
 [:h2 {
-  :font-family (font-family "open-sans" "regular")
+  :font-family font-family
   :font-size size-plus-2
   :line-height size-plus-3
 }]
 
 [:h3 :legend {
-  :font-family (font-family "open-sans" "regular")
+  :font-family font-family
   :font-size size-plus-1
   :line-height size-plus-2
 }]
 
 [:h4 {
-  :font-family (font-family "open-sans" "regular")
+  :font-family font-family
   :font-size size-0
   :line-height body-line-height
   :text-transform "uppercase"
 }]
 
 [:h5 {
-  :font-family (font-family "open-sans" "regular")
+  :font-family font-family
   :font-size size-0
   :line-height body-line-height
 }]
 
 [:h6 :label :th {
-  :font-family (font-family "open-sans" "regular")
+  :font-family font-family
   :font-size (rem 0.75)
   :letter-spacing (px 0.5)
   :line-height (rem 0.85)
@@ -45,7 +45,7 @@
   }
 
   [:span {
-    :font-family (font-family "open-sans" "regular")
+    :font-family font-family
     :font-size size-0
     :line-height body-line-height
     :text-transform "none"
@@ -81,7 +81,7 @@
 ]
 
 [:b :strong {
-  :font-family (font-family "open-sans" "extrabold")
+  :font-family font-family
 }]
 
 [:small {

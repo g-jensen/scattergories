@@ -27,7 +27,7 @@
 [:body {
   :background-color white
   :color black
-  :font-family (font-family "open-sans" "light")
+  :font-family font-family
   :line-height body-line-height
 }]
 

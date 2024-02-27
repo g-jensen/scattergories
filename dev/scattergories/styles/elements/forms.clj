@@ -32,7 +32,7 @@
   :border-radius border-radius
   :color black
   :display "inline-block"
-  :font-family (font-family "open-sans" "light")
+  :font-family font-family
   ; :height (px 50)
   :line-height body-line-height
   :padding [[size-minus-2 size-0 size-minus-2]]
@@ -48,27 +48,27 @@
 
   ["&::placeholder" {
     :color light-grey
-    :font-family (font-family "open-sans" "regular-italic")
+    :font-family font-family
   }]
 
   ["&::-webkit-input-placeholder" {
     :color light-grey
-    :font-family (font-family "open-sans" "regular-italic")
+    :font-family font-family
   }]
 
   ["&::-moz-placeholder" {
     :color light-grey
-    :font-family (font-family "open-sans" "regular-italic")
+    :font-family font-family
   }]
 
   [:&:-moz-placeholder {
     :color light-grey
-    :font-family (font-family "open-sans" "regular-italic")
+    :font-family font-family
   }]
 
   [:&:-ms-input-placeholder {
     :color light-grey
-    :font-family (font-family "open-sans" "regular-italic")
+    :font-family font-family
   }]
 
   [:&:disabled :&.disabled {
@@ -83,7 +83,7 @@
   :border-radius border-radius
   :color black
   :display "inline-block"
-  :font-family (font-family "open-sans" "light")
+  :font-family font-family
   ; :height (px 50)
   :line-height size-plus-1
   :padding [[size-minus-2 size-0 size-minus-2]]

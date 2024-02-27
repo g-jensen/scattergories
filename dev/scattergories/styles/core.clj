@@ -40,8 +40,7 @@
   :width         "100%"
 })
 
-(defn font-family [face weight]
-  (str "'" face "-" weight "', Helvetica, sans-serif"))
+(def font-family (str "'Courier New', Courier, monospace"))
 
 (defn font-load [face weight]
   (list 

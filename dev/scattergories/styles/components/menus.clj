@@ -40,7 +40,7 @@
   [:a {
     :align-items "center"
     :display "flex"
-    :font-family (font-family "open-sans" "regular")
+    :font-family font-family
     :flex [[0 1 "auto"]]
     :gap size-minus-2
     :width "auto"
@@ -122,7 +122,7 @@
   }]
 
   [:label {
-    :font-family    (font-family "open-sans" "regular")
+    :font-family    font-family
     :font-size      size-0
     :line-height    body-line-height
     :text-transform "none"
