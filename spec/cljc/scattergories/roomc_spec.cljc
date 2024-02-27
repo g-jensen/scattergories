@@ -32,27 +32,25 @@
   (context "join-room!"
 
     (it "first user to join becomes host"
-      (sut/join-room! @ds/firelink "Fire Keeper")
+      (sut/join-room! @ds/depths "Fire Keeper")
 
-      (let [player (playerc/by-nickname "Fire Keeper")
-            room   (sut/by-code ds/shrine-code)]
+      (let [player (playerc/by-nickname "Fire Keeper")]
         (should-not-be-nil player)
-        (should= (:id player) (:host room))))
+        (should= (:id player) (:host @ds/depths))))
 
     (it "subsequent users joining do not become host"
-      (sut/join-room! @ds/firelink "Solaire")
-      (sut/join-room! @ds/firelink "Fire Keeper")
-      (let [player (playerc/by-nickname "Solaire")
-            room   (sut/by-code ds/shrine-code)]
+      (sut/join-room! @ds/depths "Giant Crow")
+      (sut/join-room! @ds/depths "Fire Keeper")
+      (let [player (playerc/by-nickname "Giant Crow")]
         (should-not-be-nil player)
-        (should= (:id player) (:host room))))
+        (should= (:id player) (:host @ds/depths))))
 
     (it "stores users who have joined in order"
-      (sut/join-room! @ds/firelink "Solaire")
-      (sut/join-room! @ds/firelink "Fire Keeper")
-      (sut/join-room! @ds/firelink "Lautrec")
-      (let [room        (sut/by-code ds/shrine-code)
-            solaire     (playerc/by-nickname "Solaire")
+      (sut/join-room! @ds/depths "Giant Crow")
+      (sut/join-room! @ds/depths "Fire Keeper")
+      (sut/join-room! @ds/depths "Lautrec")
+      (let [solaire     (playerc/by-nickname "Giant Crow")
             fire-keeper (playerc/by-nickname "Fire Keeper")
             lautrec     (playerc/by-nickname "Lautrec")]
-        (should= (mapv :id [solaire fire-keeper lautrec]) (utilc/<-edn (:players room)))))))
+        (should= (mapv :id [solaire fire-keeper lautrec])
+          (utilc/<-edn (:players @ds/depths)))))))
