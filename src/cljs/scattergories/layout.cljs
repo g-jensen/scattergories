@@ -8,6 +8,5 @@
    [flash/flash-root]
    (when (ajax/activity?) [:div.site-spinner])
    [:header
-    [:div.container.horizontal-inset-plus-1.inliner.space-between
-     [:a {:href "/"} [:img.logo {:src "/images/logos/cc-emblem.png"}]]]]
+    [:div.container.horizontal-inset-plus-1.inliner.space-between]]
    (page/render @page/current)])
