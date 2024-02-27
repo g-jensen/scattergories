@@ -9,6 +9,10 @@
    (merge (->player nickname)
           {:conn-id conn-id})))
 
+(defn create-player!
+  ([nickname] (db/tx (->player nickname)))
+  ([nickname conn-id] (db/tx (->player nickname conn-id))))
+
 (defn or-id [player-or-id]
   ((some-fn :id identity) player-or-id))
 

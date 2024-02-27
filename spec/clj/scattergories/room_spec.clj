@@ -3,7 +3,7 @@
             [c3kit.bucket.api :as db]
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
-            [scattergories.dark-souls :as ds]
+            [scattergories.dark-souls :as ds :refer [depths]]
             [scattergories.playerc :as playerc]
             [scattergories.room :as sut]
             [scattergories.roomc :as roomc]
@@ -56,15 +56,20 @@
         (should-be-nil (:payload response))
         (should= "Missing nickname!" (apic/flash-text response 0))))
 
+    ; TODO - do not create player
     (it "room does not exist"
       (let [response (sut/ws-join-room {:params {:nickname "Solaire" :room-code "parish"}})]
         (should= :fail (:status response))
         (should-be-nil (:payload response))
         (should= "Room does not exist!" (apic/flash-text response 0))))
 
-    (it "should join room"
+    (it "joins room"
       (let [response (sut/ws-join-room {:params {:nickname "Sewer Rat" :room-code ds/depths-code}})]
         (should= :ok (:status response))
-        (should-be-nil (:payload response))
         (let [player (playerc/by-nickname "Sewer Rat")]
-          (should= (:id player) (:host @ds/depths)))))))
+          (should-not-be-nil player)
+          (should= [@depths player] (:payload response))
+          (should= (:id player) (:host @ds/depths)))))
+
+    (it "notifies players of new room state"
+      )))

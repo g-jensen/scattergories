@@ -20,9 +20,8 @@
                     utilc/->edn)]
     (assoc room :players players)))
 
-(defn join-room! [room nickname]
-  (let [player (db/tx (playerc/->player nickname))
-        room   (add-player room player)]
+(defn join-room! [room player]
+  (let [room   (add-player room player)]
     (if (not (:host room))
       (db/tx (assoc room :host (:id player)))
       (db/tx room))))

@@ -1,7 +1,7 @@
 (ns scattergories.roomc-spec
   (:require [c3kit.apron.utilc :as utilc]
             [c3kit.bucket.api :as db]
-            [scattergories.dark-souls :as ds]
+            [scattergories.dark-souls :as ds :refer [depths laurentius frampt patches]]
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as sut]
             [speclj.core #?(:clj :refer :cljs :refer-macros) [describe context it should= should-not-be-nil]]))
@@ -32,25 +32,19 @@
   (context "join-room!"
 
     (it "first user to join becomes host"
-      (sut/join-room! @ds/depths "Fire Keeper")
-
-      (let [player (playerc/by-nickname "Fire Keeper")]
-        (should-not-be-nil player)
-        (should= (:id player) (:host @ds/depths))))
+      (let [response (sut/join-room! @depths @laurentius)]
+        (should= @depths response)
+        (should= (:id @laurentius) (:host @depths))))
 
     (it "subsequent users joining do not become host"
-      (sut/join-room! @ds/depths "Giant Crow")
-      (sut/join-room! @ds/depths "Fire Keeper")
-      (let [player (playerc/by-nickname "Giant Crow")]
-        (should-not-be-nil player)
-        (should= (:id player) (:host @ds/depths))))
+      (sut/join-room! @depths @laurentius)
+      (let [response (sut/join-room! @depths "Giant Crow")]
+        (should= @depths response)
+        (should= (:id @laurentius) (:host @depths))))
 
     (it "stores users who have joined in order"
-      (sut/join-room! @ds/depths "Giant Crow")
-      (sut/join-room! @ds/depths "Fire Keeper")
-      (sut/join-room! @ds/depths "Solaire")
-      (let [crow        (playerc/by-nickname "Giant Crow")
-            fire-keeper (playerc/by-nickname "Fire Keeper")
-            lautrec     (playerc/by-nickname "Solaire")]
-        (should= (mapv :id [crow fire-keeper lautrec])
-          (utilc/<-edn (:players @ds/depths)))))))
+      (sut/join-room! @depths @laurentius)
+      (sut/join-room! @depths @frampt)
+      (sut/join-room! @depths @patches)
+      (should= (mapv :id [@laurentius @frampt @patches])
+        (utilc/<-edn (:players @depths))))))

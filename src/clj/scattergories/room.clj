@@ -33,7 +33,8 @@
 (defn ws-join-room [{:keys [params] :as request}]
   (or (maybe-missing-room params)
       (maybe-missing-nickname params)
-      (let [room (db/ffind-by :room :code (:room-code params))]
+      (let [room (db/ffind-by :room :code (:room-code params))
+            player (playerc/create-player! (:nickname params))]
         (or (maybe-nonexistent-room room)
-            (do (roomc/join-room! room (:nickname params))
+            (->> [(roomc/join-room! room player) player]
                 (apic/ok))))))
