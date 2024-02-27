@@ -63,8 +63,8 @@
         (should= "Room does not exist!" (apic/flash-text response 0))))
 
     (it "should join room"
-      (let [response (sut/ws-join-room {:params {:nickname "Solaire" :room-code ds/shrine-code}})]
+      (let [response (sut/ws-join-room {:params {:nickname "Sewer Rat" :room-code ds/depths-code}})]
         (should= :ok (:status response))
         (should-be-nil (:payload response))
-        (let [player (playerc/by-nickname "Solaire")]
-          (should= (:id player) (:host @ds/firelink)))))))
+        (let [player (playerc/by-nickname "Sewer Rat")]
+          (should= (:id player) (:host @ds/depths)))))))

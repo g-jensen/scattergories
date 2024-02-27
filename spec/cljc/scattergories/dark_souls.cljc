@@ -15,7 +15,7 @@
 (def depths-code "depths")
 
 (def firelink-atom (atom nil))
-(def solaire-atom (atom nil))
+(def lautrec-atom (atom nil))
 (def depths-atom (atom nil))
 
 (deftype Entity [atm]
@@ -23,14 +23,14 @@
   (#?(:clj deref :cljs -deref) [this] (db/reload @atm)))
 
 (def firelink (Entity. firelink-atom))                      ;; a populated room
-(def solaire (Entity. solaire-atom))                        ;; a player at firelink
+(def lautrec (Entity. lautrec-atom))                        ;; a player at firelink
 (def depths (Entity. depths-atom))                          ;; an empty room
 
 (defn init []
   (reset! firelink-atom (roomc/create-room! shrine-code))
   (reset! depths-atom (roomc/create-room! depths-code))
-  (reset! solaire-atom (db/tx (playerc/->player "Solaire")))
-  (db/tx (roomc/add-player @firelink @solaire)))
+  (reset! lautrec-atom (db/tx (playerc/->player "Lautrec")))
+  (db/tx (roomc/add-player @firelink @lautrec)))
 
 (defn with-schemas
   ([] (with-schemas schemas))

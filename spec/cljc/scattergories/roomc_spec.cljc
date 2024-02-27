@@ -48,9 +48,9 @@
     (it "stores users who have joined in order"
       (sut/join-room! @ds/depths "Giant Crow")
       (sut/join-room! @ds/depths "Fire Keeper")
-      (sut/join-room! @ds/depths "Lautrec")
-      (let [solaire     (playerc/by-nickname "Giant Crow")
+      (sut/join-room! @ds/depths "Solaire")
+      (let [crow        (playerc/by-nickname "Giant Crow")
             fire-keeper (playerc/by-nickname "Fire Keeper")
-            lautrec     (playerc/by-nickname "Lautrec")]
-        (should= (mapv :id [solaire fire-keeper lautrec])
+            lautrec     (playerc/by-nickname "Solaire")]
+        (should= (mapv :id [crow fire-keeper lautrec])
           (utilc/<-edn (:players @ds/depths)))))))

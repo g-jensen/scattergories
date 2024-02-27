@@ -1,9 +1,13 @@
 (ns scattergories.playerc
   (:require [c3kit.bucket.api :as db]))
 
-(defn ->player [nickname]
-  {:kind     :player
-   :nickname nickname})
+(defn ->player
+  ([nickname]
+   {:kind     :player
+    :nickname nickname})
+  ([nickname conn-id]
+   (merge (->player nickname)
+          {:conn-id conn-id})))
 
 (defn or-id [player-or-id]
   ((some-fn :id identity) player-or-id))

@@ -4,6 +4,11 @@
 
 (describe "playerc"
 
+  (it "constructor"
+    (let [player (sut/->player "Lautrec" "conn-id")]
+      (should= "Lautrec" (:nickname player))
+      (should= "conn-id" (:conn-id player))))
+
   (context "or-id"
 
     (it "player"
