@@ -3,7 +3,9 @@
             [c3kit.bucket.api :as db]
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
-            [scattergories.dark-souls :as ds :refer [depths]]
+            [c3kit.wire.websocket :as ws]
+            [scattergories.dark-souls :as ds :refer [firelink depths lautrec frampt patches]]
+            [scattergories.dispatch :as dispatch]
             [scattergories.playerc :as playerc]
             [scattergories.room :as sut]
             [scattergories.roomc :as roomc]
@@ -64,12 +66,18 @@
         (should-be-nil (playerc/by-nickname "Solaire"))))
 
     (it "joins room"
-      (let [response (sut/ws-join-room {:params {:nickname "Sewer Rat" :room-code ds/depths-code}})]
+      (let [response (sut/ws-join-room {:params        {:nickname "Sewer Rat" :room-code ds/depths-code}
+                                        :connection-id "conn-rat"})]
         (should= :ok (:status response))
         (let [player (playerc/by-nickname "Sewer Rat")]
           (should-not-be-nil player)
           (should= [@depths player] (:payload response))
-          (should= (:id player) (:host @ds/depths)))))
+          (should= (:id player) (:host @ds/depths))
+          (should= "conn-rat" (:conn-id player)))))
 
     (it "notifies players of new room state"
-      )))
+      (with-redefs [dispatch/push-to-connections! (stub :push-to-connections!)]
+        (let [response (sut/ws-join-room {:params        {:nickname "Giant Crow" :room-code ds/shrine-code}
+                                          :connection-id "conn-crow"})]
+          (should= :ok (:status response))
+          (should-have-invoked :push-to-connections!))))))

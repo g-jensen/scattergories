@@ -13,9 +13,12 @@
         room (->room code)]
     (db/tx room)))
 
-(defn add-player [{:keys [players] :as room} player]
+(defn player-ids [{:keys [players] :as room}]
+  (utilc/<-edn players))
+
+(defn add-player [room player]
   (let [id      (playerc/or-id player)
-        players (-> (utilc/<-edn players)
+        players (-> (player-ids room)
                     (conj id)
                     utilc/->edn)]
     (assoc room :players players)))

@@ -1,6 +1,7 @@
 (ns scattergories.room
   (:require [c3kit.bucket.api :as db]
             [c3kit.wire.apic :as apic]
+            [scattergories.dispatch :as dispatch]
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as roomc]))
 
@@ -30,17 +31,19 @@
 (defn maybe-missing-nickname [{:keys [nickname] :as params}]
   (when-not nickname (apic/fail nil "Missing nickname!")))
 
-(defn create-and-join! [room nickname]
-  (let [player (playerc/create-player! nickname)]
-    (->> [(roomc/join-room! room player) player]
-         (apic/ok))))
+(defn- create-and-join! [room nickname connection-id]
+  (let [player (playerc/create-player! nickname connection-id)
+        room   (roomc/join-room! room player)
+        players (map db/entity (roomc/player-ids room))]
+    (dispatch/push-to-players! players :room/update [room player])
+    (apic/ok [room player])))
 
-(defn assign-to-room! [{:keys [room-code nickname]}]
+(defn- assign-to-room! [{:keys [room-code nickname]} connection-id]
   (let [room (db/ffind-by :room :code room-code)]
     (or (maybe-nonexistent-room room)
-        (create-and-join! room nickname))))
+        (create-and-join! room nickname connection-id))))
 
-(defn ws-join-room [{:keys [params] :as request}]
+(defn ws-join-room [{:keys [params connection-id] :as request}]
   (or (maybe-missing-room params)
       (maybe-missing-nickname params)
-      (assign-to-room! params)))
+      (assign-to-room! params connection-id)))
