@@ -3,6 +3,7 @@
             [scattergories.spec-helper]
             [c3kit.wire.spec-helper :as wire-helper]
             [c3kit.wire.websocket :as ws]
+            [scattergories.layouts]
             [speclj.core :refer :all]
             [speclj.stub :as stub]))
 
@@ -43,7 +44,8 @@
 
   ;; web routes
   ; TODO - fixme
-  ;(test-route "/" :get scattergories.layouts/web-rich-client)
+  (test-route "/" :get scattergories.layouts/web-rich-client)
+  (test-route "/room/shrine" :get scattergories.layouts/web-rich-client)
   ;(test-route "/forgot-password" :get scattergories.layouts/web-rich-client)
   ;(test-route "/recover-password/foo" :get scattergories.layouts/web-rich-client)
   ;(test-route "/sandbox/example-page" :get scattergories.sandbox.core/handler)

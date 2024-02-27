@@ -79,6 +79,7 @@
   (lazy-routes
     {
      ["/" :get]                                 scattergories.layouts/web-rich-client
+     ["/room/:code" :get]                       scattergories.layouts/web-rich-client
      ;["/error" :any]                            scattergories.errors/web-error
      ;["/forgot-password" :get]                  scattergories.layouts/web-rich-client
      ;["/recover-password/:recovery-token" :get] scattergories.layouts/web-rich-client

@@ -32,6 +32,8 @@
   (secretary/set-config! :prefix "")
 
   (defroute "/" [] (load-page! :home))
-  (defroute "/forgot-password" [] (load-page! :forgot-password))
+  (defroute "/room/:code" [code]
+    (page/install-room! code)
+    (load-page! :room))
 
   (hook-browser-navigation!))
