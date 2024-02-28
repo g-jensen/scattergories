@@ -6,27 +6,22 @@
 (defn ->room [code]
   {:kind    :room
    :code    code
-   :players "[]"})
+   :players []})
 
 (defn create-room! [code]
   (let [code code
         room (->room code)]
     (db/tx room)))
 
-(defn player-ids [{:keys [players] :as room}]
-  (utilc/<-edn players))
-
-(defn add-player [room player]
+(defn add-player [{:keys [players] :as room} player]
   (let [id      (playerc/or-id player)
-        players (-> (player-ids room)
-                    (conj id)
-                    utilc/->edn)]
+        players (conj players id)]
     (assoc room :players players)))
 
 (defn join-room! [room player]
   (let [room   (add-player room player)]
     (if (not (:host room))
-      (db/tx (assoc room :host (:id player)))
+      (db/tx (assoc room :host (playerc/or-id player)))
       (db/tx room))))
 
 (defn by-code [code]

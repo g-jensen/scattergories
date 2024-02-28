@@ -6,7 +6,7 @@
    :id      s/id
    :code    {:type :string :validate s/present? :message "must be present"}
    :host    {:type :long}
-   :players {:type :string :validate s/present? :message "must be present"}
+   :players {:type [:long] :validate s/present? :message "must be present"}
    })
 
 (def all [room])

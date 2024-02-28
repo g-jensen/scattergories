@@ -40,7 +40,7 @@
 (defn- create-and-join! [room nickname connection-id]
   (let [player (playerc/create-player! nickname connection-id)
         room   (roomc/join-room! room player)
-        players (map db/entity (roomc/player-ids room))]
+        players (map db/entity (:players room))]
     (dispatch/push-to-players! players :room/update [room player])
     (apic/ok [room player])))
 

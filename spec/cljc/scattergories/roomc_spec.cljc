@@ -4,7 +4,7 @@
             [scattergories.dark-souls :as ds :refer [depths laurentius frampt patches]]
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as sut]
-            [speclj.core #?(:clj :refer :cljs :refer-macros) [describe context it should= should-not-be-nil]]))
+            [speclj.core #?(:clj :refer :cljs :refer-macros) [describe context focus-it it should= should-not-be-nil]]))
 
 (describe "roomc"
   (ds/init-with-schemas)
@@ -18,16 +18,16 @@
   (context "add-player"
 
     (it "to empty room"
-      (let [room (sut/add-player {:players "[]"} {:id 123})]
-        (should= [123] (utilc/<-edn (:players room)))))
+      (let [room (sut/add-player {:players []} {:id 123})]
+        (should= [123] (:players room))))
 
     (it "to room with one player"
-      (let [room (sut/add-player {:players "[123]"} 124)]
-        (should= [123 124] (utilc/<-edn (:players room)))))
+      (let [room (sut/add-player {:players [123]} 124)]
+        (should= [123 124] (:players room))))
 
     (it "to room with many players"
-      (let [room (sut/add-player {:players "[123 124]"} 125)]
-        (should= [123 124 125] (utilc/<-edn (:players room))))))
+      (let [room (sut/add-player {:players [123 124]} 125)]
+        (should= [123 124 125] (:players room)))))
 
   (context "join-room!"
 
@@ -38,7 +38,8 @@
 
     (it "subsequent users joining do not become host"
       (sut/join-room! @depths @laurentius)
-      (let [response (sut/join-room! @depths "Giant Crow")]
+      (let [crow     (playerc/create-player! "Giant Crow")
+            response (sut/join-room! @depths crow)]
         (should= @depths response)
         (should= (:id @laurentius) (:host @depths))))
 
@@ -46,5 +47,4 @@
       (sut/join-room! @depths @laurentius)
       (sut/join-room! @depths @frampt)
       (sut/join-room! @depths @patches)
-      (should= (mapv :id [@laurentius @frampt @patches])
-        (utilc/<-edn (:players @depths))))))
+      (should= (mapv :id [@laurentius @frampt @patches]) (:players @depths)))))
