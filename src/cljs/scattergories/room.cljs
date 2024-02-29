@@ -45,7 +45,6 @@
         [:li {:key (:id player)} (:nickname player)])]]]
    [:div.center
     [:div.game-container
-     [:h1 (str @page/state)]
      [:h1 "Scattergories"]
      [:div.letter-display
       [:h2.categories-data "Letter: " [:span#letter "A"]]]
