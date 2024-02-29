@@ -41,6 +41,26 @@
       (sut/ws-create-room {})
       (should-not-be-nil (roomc/by-code "EFHJKL"))))
 
+  (context "ws-fetch-room"
+    (before (roomc/create-room! "asylum"))
+
+    (it "missing room"
+      (let [response (sut/ws-fetch-room {:params {}})]
+        (should= :fail (:status response))
+        (should-be-nil (:payload response))
+        (should= "Missing room!" (apic/flash-text response 0))))
+
+    (it "room does not exist"
+      (let [response (sut/ws-fetch-room {:params {:room-code "parish"}})]
+        (should= :fail (:status response))
+        (should-be-nil (:payload response))
+        (should= "Room does not exist!" (apic/flash-text response 0))))
+
+    (it "fetches room"
+      (let [response (sut/ws-fetch-room {:params {:room-code ds/depths-code}})]
+        (should= :ok (:status response))
+        (should= [@ds/depths] (:payload response)))))
+
   (context "ws-join-room"
     (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 

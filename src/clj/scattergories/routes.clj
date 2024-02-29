@@ -57,6 +57,7 @@
   {
    :ws/close    'scattergories.room/ws-leave-room
    :room/create 'scattergories.room/ws-create-room
+   :room/fetch  'scattergories.room/ws-fetch-room
    :room/join   'scattergories.room/ws-join-room
    })
 
