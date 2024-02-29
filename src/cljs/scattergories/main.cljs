@@ -6,6 +6,7 @@
             [c3kit.wire.api :as api]
             [c3kit.wire.flash :as flash]
             [c3kit.wire.js :as wjs]
+            [c3kit.wire.websocket :as ws]
             [scattergories.config :as config]
             [scattergories.init :as init]
             [scattergories.layout :as layout]
@@ -16,10 +17,10 @@
 ;; MDM: Needed with advanced compilation so pages can load content
 (goog/exportSymbol "goog.require" goog/require)
 
-(defn load-config [{:keys [api-version anti-forgery-token] :as config}]
+(defn load-config [{:keys [api-version anti-forgery-token ws-csrf-token] :as config}]
   (api/configure! {:version      api-version
                    :ajax-prep-fn (ajax/prep-csrf "X-CSRF-Token" anti-forgery-token)
-                   })
+                   :ws-csrf-token ws-csrf-token})
   (config/install! config)
   (if @config/production?
     (log/warn!)
@@ -31,7 +32,10 @@
   (dom/render [layout/default] (wjs/element-by-id "app-root")))
 
 (defn establish-session [config]
-  (config/install! config))
+  (config/install! config)
+  (if @config/ws-csrf-token
+    (ws/start!)
+    (ajax/get! "/api/csrf-token" {} establish-session)))
 
 (defn ^:export main [payload-src]
   (init/install-legend!)

@@ -55,8 +55,9 @@
 
 (def ws-handlers
   {
-   :ws/close  'scattergories.room.ws-leave-room
-   :room/join 'scattergories.room.ws-join-room
+   :ws/close    'scattergories.room/ws-leave-room
+   :room/create 'scattergories.room/ws-create-room
+   :room/join   'scattergories.room/ws-join-room
    })
 
 (defn sleep-for-10 [] (Thread/sleep 10000))
@@ -69,24 +70,25 @@
         {
          ;["/forgot-password" :post]  scattergories.auth/ajax-forgot-password
          ;["/recover-password" :post] scattergories.auth/ajax-recover-password
-         ["/spinner" :get]           scattergories.routes/spinner
+         ["/spinner" :get]    scattergories.routes/spinner
+         ["/csrf-token" :get] scattergories.auth/ajax-csrf-token
          ;["/user/csrf-token" :get]   scattergories.auth/ajax-csrf-token
          ;["/user/signin" :post]      scattergories.auth/ajax-login
          })
-    (wrap-prefix "/ajax" ajax/api-not-found-handler)
+    (wrap-prefix "/api" ajax/api-not-found-handler)
     ajax/wrap-ajax))
 
 (def web-routes-handlers
   (lazy-routes
     {
-     ["/" :get]                                 scattergories.layouts/web-rich-client
-     ["/room/:code" :get]                       scattergories.layouts/web-rich-client
+     ["/" :get]               scattergories.layouts/web-rich-client
+     ["/room/:code" :get]     scattergories.layouts/web-rich-client
      ;["/error" :any]                            scattergories.errors/web-error
      ;["/forgot-password" :get]                  scattergories.layouts/web-rich-client
      ;["/recover-password/:recovery-token" :get] scattergories.layouts/web-rich-client
      ;["/signout" :any]                          scattergories.auth/web-signout
      ;["/signout/:reason" :any]                  scattergories.auth/web-signout
-     ;["/user/websocket" :any]                   scattergories.auth/websocket-open
+     ["/user/websocket" :any] scattergories.auth/websocket-open
      }))
 
 (def dev-handler
@@ -100,7 +102,7 @@
      }))
 
 (defroutes handler
-  ajax-routes-handler
-  web-routes-handlers
-  (if config/production? ccc/noop dev-handler)
-  )
+           ajax-routes-handler
+           web-routes-handlers
+           (if config/production? ccc/noop dev-handler)
+           )
