@@ -1,6 +1,7 @@
 (ns scattergories.home-spec
   (:require-macros [speclj.core :refer [around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]])
   (:require [accountant.core :as accountant]
+            [c3kit.apron.corec :as ccc]
             [c3kit.wire.js :as wjs]
             [scattergories.dark-souls :as ds]
             [scattergories.home :as sut]
@@ -20,14 +21,14 @@
   (ds/with-schemas)
   (before (reset! state/nickname nil))
 
-  (context "joins room with code"
-    (it "UK2LLJ"
+  (context "joins room with code and nickname"
+    (it "UK2LLJ, Lautrec"
+      (reset! state/nickname "Lautrec")
       (sut/join-room! ["UK2LLJ"])
-      (should-have-invoked :redirect! {:with ["/room/UK2LLJ"]}))
-
-    (it "MA5BX1"
-      (sut/join-room! ["MA5BX1"])
-      (should-have-invoked :redirect! {:with ["/room/MA5BX1"]})))
+      (should-have-invoked :ws/call! {:with [:room/join
+                                             {:nickname "Lautrec" :room-code "UK2LLJ"}
+                                             ccc/noop]})
+      (should-have-invoked :redirect! {:with ["/room/UK2LLJ"]})))
 
   (context "nickname input"
     (before (wire/render [sut/home state/nickname]))
