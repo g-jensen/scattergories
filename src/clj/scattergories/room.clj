@@ -39,10 +39,11 @@
   (when-not nickname (apic/fail nil "Missing nickname!")))
 
 (defn ws-fetch-room [{:keys [params] :as request}]
-  (let [room (db/ffind-by :room :code (:room-code params))]
+  (let [room (db/ffind-by :room :code (:room-code params))
+        players (map db/entity (:players room))]
     (or (maybe-missing-room params)
         (maybe-nonexistent-room room)
-        (apic/ok [room]))))
+        (apic/ok (cons room players)))))
 
 (defn- push-to-room! [room payload]
   (let [players (map db/entity (:players room))]

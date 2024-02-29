@@ -41,26 +41,6 @@
       (sut/ws-create-room {})
       (should-not-be-nil (roomc/by-code "EFHJKL"))))
 
-  (context "ws-fetch-room"
-    (before (roomc/create-room! "asylum"))
-
-    (it "missing room"
-      (let [response (sut/ws-fetch-room {:params {}})]
-        (should= :fail (:status response))
-        (should-be-nil (:payload response))
-        (should= "Missing room!" (apic/flash-text response 0))))
-
-    (it "room does not exist"
-      (let [response (sut/ws-fetch-room {:params {:room-code "parish"}})]
-        (should= :fail (:status response))
-        (should-be-nil (:payload response))
-        (should= "Room does not exist!" (apic/flash-text response 0))))
-
-    (it "fetches room"
-      (let [response (sut/ws-fetch-room {:params {:room-code ds/depths-code}})]
-        (should= :ok (:status response))
-        (should= [@ds/depths] (:payload response)))))
-
   (context "ws-join-room"
     (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 
@@ -123,4 +103,25 @@
       (sut/ws-leave-room {:connection-id "conn-patches"})
       (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
                                                      :room/update
-                                                     [@firelink]]}))))
+                                                     [@firelink]]})))
+
+  (context "ws-fetch-room"
+    (before (roomc/create-room! "depths"))
+
+    (it "missing room"
+      (let [response (sut/ws-fetch-room {:params {}})]
+        (should= :fail (:status response))
+        (should-be-nil (:payload response))
+        (should= "Missing room!" (apic/flash-text response 0))))
+
+    (it "room does not exist"
+      (let [response (sut/ws-fetch-room {:params {:room-code "parish"}})]
+        (should= :fail (:status response))
+        (should-be-nil (:payload response))
+        (should= "Room does not exist!" (apic/flash-text response 0))))
+
+    (it "fetches room"
+      (let [[_ crow] (:payload (sut/ws-join-room {:params {:nickname "Giant Crow" :room-code ds/depths-code}}))
+            response (sut/ws-fetch-room {:params {:room-code ds/depths-code}})]
+        (should= :ok (:status response))
+        (should= [@ds/depths crow] (:payload response))))))
