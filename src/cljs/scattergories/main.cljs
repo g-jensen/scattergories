@@ -12,6 +12,7 @@
             [scattergories.layout :as layout]
             [scattergories.routes :as router]
             [reagent.dom :as dom]
+            [scattergories.push-handler]
             ))
 
 ;; MDM: Needed with advanced compilation so pages can load content
