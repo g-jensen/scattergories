@@ -16,7 +16,7 @@
 
   (it-routes "/" :home)
   (it-routes "/room/shrine" :room
-             (should= "shrine" (:code (:room @page/state))))
+             (should= "shrine" (:room-code @page/state)))
   (it-routes "/room/depths" :room
-             (should= "depths" (:code (:room @page/state))))
+             (should= "depths" (:room-code @page/state)))
   )
