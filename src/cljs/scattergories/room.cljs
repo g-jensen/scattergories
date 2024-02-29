@@ -63,7 +63,7 @@
 
 (defn nickname-prompt-or-room [nickname-ratom]
   [:div {:id "-prompt-or-room"}
-   (if-not @nickname-ratom
+   (if (str/blank? @nickname-ratom)
      [nickname-prompt nickname-ratom]
      [room state/players])])
 
