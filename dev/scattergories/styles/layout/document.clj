@@ -44,4 +44,8 @@
 [:button:hover
  {:background-color "#006666"}]
 
+[:ul
+ {:list-style-type "none"
+  :padding "0"}]
+
 ))
