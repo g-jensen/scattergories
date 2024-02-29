@@ -43,7 +43,7 @@
       (should-not-be-nil (roomc/by-code "EFHJKL"))))
 
   (context "ws-join-room"
-    (redefs-around [dispatch/push-to-connections! (stub :push-to-connections!)])
+    (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 
     (before (roomc/create-room! "asylum"))
 
@@ -78,13 +78,30 @@
 
     (it "notifies players of new room state"
       (let [response (sut/ws-join-room {:params        {:nickname "Giant Crow" :room-code ds/shrine-code}
-                                        :connection-id "conn-crow"})]
+                                        :connection-id "conn-crow"})
+            crow     (playerc/by-nickname "Giant Crow")]
         (should= :ok (:status response))
-        (should-have-invoked :push-to-connections!)))
+        (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                       :room/update
+                                                       [@firelink crow]]})))
 
     (it "responds with current room state & all current players"
       (let [response (sut/ws-join-room {:params        {:nickname "Giant Crow" :room-code ds/shrine-code}
                                         :connection-id "conn-crow"})
             crow     (playerc/by-nickname "Giant Crow")]
         (should= :ok (:status response))
-        (should= (set [@firelink crow @lautrec @frampt @patches]) (set (:payload response)))))))
+        (should= (set [@firelink crow @lautrec @frampt @patches]) (set (:payload response))))))
+
+  (context "ws-leave-room"
+    (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
+
+    (it "removes player from room"
+      (sut/ws-leave-room {:connection-id "conn-patches"})
+      (should-not-contain (:id @patches) (:players @firelink))
+      (should= (mapv :id [@lautrec @frampt]) (:players @firelink)))
+
+    (it "notifies players of new room state"
+      (sut/ws-leave-room {:connection-id "conn-patches"})
+      (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                     :room/update
+                                                     [@firelink]]}))))

@@ -37,11 +37,15 @@
 (defn maybe-missing-nickname [{:keys [nickname] :as params}]
   (when-not nickname (apic/fail nil "Missing nickname!")))
 
+(defn- push-to-room! [room payload]
+  (let [players (map db/entity (:players room))]
+    (dispatch/push-to-players! players :room/update payload)))
+
 (defn- create-and-join! [room nickname connection-id]
   (let [player (playerc/create-player! nickname connection-id)
         room   (roomc/join-room! room player)
         players (map db/entity (:players room))]
-    (dispatch/push-to-players! players :room/update [room player])
+    (push-to-room! room [room player])
     (apic/ok (cons room players))))
 
 (defn- assign-to-room! [{:keys [room-code nickname]} connection-id]
@@ -54,3 +58,11 @@
     (or (maybe-missing-room params)
         (maybe-missing-nickname params)
         (assign-to-room! params connection-id))))
+
+(defn ws-leave-room [{:keys [connection-id] :as request}]
+  (with-lock
+    (when-let [player (playerc/by-conn-id connection-id)]
+      (let [room      (roomc/by-player player)
+            room      (roomc/leave-room! room player)]
+        (push-to-room! room [room])
+        (roomc/leave-room! room player)))))

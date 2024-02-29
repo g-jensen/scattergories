@@ -55,7 +55,8 @@
 
 (def ws-handlers
   {
-   :user/fetch-data 'scattergories.auth/ws-fetch-user-data
+   :ws/close  'scattergories.room.ws-leave-room
+   :room/join 'scattergories.room.ws-join-room
    })
 
 (defn sleep-for-10 [] (Thread/sleep 10000))

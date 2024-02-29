@@ -39,9 +39,9 @@
   (reset! frampt-atom (db/tx (playerc/->player "Kingseeker Frampt" "conn-frampt")))
   (reset! patches-atom (db/tx (playerc/->player "Patches" "conn-patches")))
   (reset! laurentius-atom (db/tx (playerc/->player "Laurentius" "conn-laurentius")))
-  (db/tx (roomc/add-player @firelink @lautrec))
-  (db/tx (roomc/add-player @firelink @frampt))
-  (db/tx (roomc/add-player @firelink @patches)))
+  (roomc/join-room! @firelink @lautrec)
+  (roomc/join-room! @firelink @frampt)
+  (roomc/join-room! @firelink @patches))
 
 (defn with-schemas
   ([] (with-schemas schemas))
