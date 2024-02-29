@@ -43,6 +43,7 @@
       (should-not-be-nil (roomc/by-code "EFHJKL"))))
 
   (context "ws-join-room"
+    (redefs-around [dispatch/push-to-connections! (stub :push-to-connections!)])
 
     (before (roomc/create-room! "asylum"))
 
@@ -76,8 +77,14 @@
           (should= "conn-rat" (:conn-id player)))))
 
     (it "notifies players of new room state"
-      (with-redefs [dispatch/push-to-connections! (stub :push-to-connections!)]
-        (let [response (sut/ws-join-room {:params        {:nickname "Giant Crow" :room-code ds/shrine-code}
-                                          :connection-id "conn-crow"})]
-          (should= :ok (:status response))
-          (should-have-invoked :push-to-connections!))))))
+      (let [response (sut/ws-join-room {:params        {:nickname "Giant Crow" :room-code ds/shrine-code}
+                                        :connection-id "conn-crow"})]
+        (should= :ok (:status response))
+        (should-have-invoked :push-to-connections!)))
+
+    (it "responds with current room state & all current players"
+      (let [response (sut/ws-join-room {:params        {:nickname "Giant Crow" :room-code ds/shrine-code}
+                                        :connection-id "conn-crow"})
+            crow     (playerc/by-nickname "Giant Crow")]
+        (should= :ok (:status response))
+        (should= (set [@firelink crow @lautrec @frampt @patches]) (set (:payload response)))))))

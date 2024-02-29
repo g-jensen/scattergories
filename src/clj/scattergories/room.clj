@@ -42,7 +42,7 @@
         room   (roomc/join-room! room player)
         players (map db/entity (:players room))]
     (dispatch/push-to-players! players :room/update [room player])
-    (apic/ok [room player])))
+    (apic/ok (cons room players))))
 
 (defn- assign-to-room! [{:keys [room-code nickname]} connection-id]
   (let [room (db/ffind-by :room :code room-code)]
