@@ -9,7 +9,7 @@
   (accountant/navigate! (str "/room/" code)))
 
 (defn- create-room! [nickname]
-  (when nickname
+  (when (not (empty? nickname))
     (ws/call! :room/create {:nickname nickname} join-room!)))
 
 (defn home [nickname-ratom]
