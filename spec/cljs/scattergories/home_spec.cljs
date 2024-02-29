@@ -1,21 +1,24 @@
 (ns scattergories.home-spec
   (:require-macros [speclj.core :refer [around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]])
-  (:require [c3kit.wire.js :as wjs]
+  (:require [accountant.core :as accountant]
+            [c3kit.wire.js :as wjs]
             [scattergories.dark-souls :as ds]
             [scattergories.home :as sut]
-            [c3kit.wire.spec-helper :as wire]))
+            [c3kit.wire.spec-helper :as wire]
+            [scattergories.state :as state]))
 
-(defn stub-redirect! []
+(defn stub-navigate! []
   (around [it]
-          (with-redefs [wjs/redirect! (stub :redirect!)]
+          (with-redefs [accountant/navigate! (stub :redirect!)]
             (it))))
 
 (describe "Home"
   (with-stubs)
   (wire/stub-ws)
-  (stub-redirect!)
+  (stub-navigate!)
   (wire/with-root-dom)
   (ds/with-schemas)
+  (before (reset! state/nickname nil))
 
   (context "joins room with code"
     (it "UK2LLJ"
@@ -26,8 +29,15 @@
       (sut/join-room! ["MA5BX1"])
       (should-have-invoked :redirect! {:with ["/room/MA5BX1"]})))
 
+  (context "nickname input"
+    (before (wire/render [sut/home state/nickname]))
+
+    (it "updates value on change"
+      (wire/change! "#-nickname-input" "Lautrec")
+      (should= "Lautrec" @state/nickname)))
+
   (context "create room"
-    (before (wire/render [sut/home]))
+    (before (wire/render [sut/home state/nickname]))
 
     (it "does nothing if no nickname"
       (wire/click! "#-create-room-button")

@@ -1,31 +1,30 @@
 (ns scattergories.home
-  (:require [c3kit.wire.js :as wjs]
+  (:require [accountant.core :as accountant]
+            [c3kit.wire.js :as wjs]
             [c3kit.wire.websocket :as ws]
-            [reagent.core :as reagent]
+            [scattergories.state :as state]
             [scattergories.page :as page]))
 
 (defn join-room! [[code]]
-  (wjs/redirect! (str "/room/" code)))
+  (accountant/navigate! (str "/room/" code)))
 
 (defn- create-room! [nickname]
   (when nickname
     (ws/call! :room/create {:nickname nickname} join-room!)))
 
-(defn home []
-  (let [nickname (reagent/atom nil)]
-    (fn []
-      [:div.homepage-container
-       [:h1 "Welcome to Scattergories"]
-       [:div.nickname-input
-        [:input {:type "text"
-                 :id "-nickname-input"
-                 :placeholder "Enter your nickname"
-                 :value @nickname
-                 :on-change #(reset! nickname (wjs/e-text %))}]]
-       [:div.room-actions
-        [:button {:id       "-create-room-button"
-                  :on-click #(create-room! @nickname)}
-         "Create Room"]]])))
+(defn home [nickname]
+  [:div.homepage-container
+   [:h1 "Welcome to Scattergories"]
+   [:div.nickname-input
+    [:input {:type "text"
+             :id "-nickname-input"
+             :placeholder "Enter your nickname"
+             :value @nickname
+             :on-change #(reset! nickname (wjs/e-text %))}]]
+   [:div.room-actions
+    [:button {:id       "-create-room-button"
+              :on-click #(create-room! @nickname)}
+     "Create Room"]]])
 
 (defmethod page/render :home [_]
-  [home])
+  [home state/nickname])
