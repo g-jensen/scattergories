@@ -27,8 +27,7 @@
 
 (defn ws-create-room [{:keys [params] :as request}]
   (with-lock
-    (roomc/create-room! (unused-code))
-    (apic/ok)))
+    (apic/ok [(roomc/create-room! (unused-code))])))
 
 (defn maybe-missing-room [{:keys [room-code] :as params}]
   (when-not room-code (apic/fail nil "Missing room!")))

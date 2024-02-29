@@ -31,11 +31,10 @@
   (context "ws-create-room"
 
     (it "success"
-      (should= (apic/ok) (sut/ws-create-room {})))
-
-    (it "saves room to db"
-      (sut/ws-create-room {})
-      (should-not-be-nil (roomc/by-code "89ABCD")))
+      (let [response (sut/ws-create-room {})
+            room     (roomc/by-code "89ABCD")]
+        (should= :ok (:status response))
+        (should= [room] (:payload response))))
 
     (it "does not duplicate room codes"
       (db/tx (roomc/->room "89ABCD"))
