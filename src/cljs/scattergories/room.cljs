@@ -1,10 +1,19 @@
 (ns scattergories.room
-  (:require [c3kit.wire.js :as wjs]
+  (:require [c3kit.apron.corec :as ccc]
+            [c3kit.wire.js :as wjs]
+            [c3kit.wire.websocket :as ws]
             [reagent.core :as reagent]
             [scattergories.core :as cc]
             [scattergories.layoutc :as layoutc]
+            [c3kit.bucket.api :as db]
             [scattergories.page :as page]
             [scattergories.state :as state]))
+
+(defn- join-room! []
+  (when (not (empty? @state/nickname))
+    (ws/call! :room/join
+              {:nickname @state/nickname :room-code (:room-code @page/state)}
+              db/tx*)))
 
 (defn nickname-prompt [_]
   (let [local-nickname-ratom (reagent/atom nil)]
@@ -12,16 +21,18 @@
       [:div.center-div.margin-top-plus-5
        {:id "-nickname-prompt"}
        [:h1 "Enter nickname to join room..."]
-       [:input {:type "text"
-                :id "-nickname-input"
-                :placeholder "Enter your nickname"
-                :value @local-nickname-ratom
-                :on-change #(reset! local-nickname-ratom (wjs/e-text %))}]
-       [:button {:id "-join-button"
-                 :on-click #(reset! nickname-ratom @local-nickname-ratom)}
-        "Join"]])))
+       [:div.center
+        [:input {:type "text"
+                 :id "-nickname-input"
+                 :placeholder "Enter your nickname"
+                 :value @local-nickname-ratom
+                 :on-change #(reset! local-nickname-ratom (wjs/e-text %))}]
+        [:button {:id "-join-button"
+                  :on-click #(do (reset! nickname-ratom @local-nickname-ratom)
+                                 (join-room!))}
+         "Join"]]])))
 
-(defn room []
+(defn room [players-ratom]
   [:div.main-container
    {:id "-room"}
    [:div.left-container
@@ -29,10 +40,12 @@
     [:br]
     [:h3 "Players"]
     [:ul
-     [:li "Fleg Griffin II"]
-     [:li "Peta"]]]
+     [:<>
+      (ccc/for-all [player @players-ratom]
+        [:li {:key (:id player)} (:nickname player)])]]]
    [:div.center
     [:div.game-container
+     [:h1 (str @page/state)]
      [:h1 "Scattergories"]
      [:div.letter-display
       [:h2.categories-data "Letter: " [:span#letter "A"]]]
@@ -49,9 +62,23 @@
       [:input {:type "text" :id "Really long name" :name "Really long name"}]]]]])
 
 (defn nickname-prompt-or-room [nickname-ratom]
-  (if-not @nickname-ratom
-    [nickname-prompt nickname-ratom]
-    (do (room))))
+  [:div {:id "-prompt-or-room"}
+   (if-not @nickname-ratom
+     [nickname-prompt nickname-ratom]
+     [room state/players])])
+
+(defn- fetch-room []
+  (ws/call! :room/fetch
+            {:room-code (:room-code @page/state)}
+            db/tx*))
+
+(defn maybe-render-room [room-ratom]
+  (if @room-ratom
+    [nickname-prompt-or-room state/nickname]
+    [:h1 {:id "-room-not-found"} "Room not found!"]))
+
+(defmethod page/entering! :room [_]
+  (fetch-room))
 
 (defmethod page/render :room [_]
-  [nickname-prompt-or-room state/nickname])
+  [maybe-render-room state/room])
