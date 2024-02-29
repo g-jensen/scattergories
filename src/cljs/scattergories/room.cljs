@@ -1,10 +1,29 @@
 (ns scattergories.room
-  (:require [scattergories.core :as cc]
+  (:require [c3kit.wire.js :as wjs]
+            [reagent.core :as reagent]
+            [scattergories.core :as cc]
             [scattergories.layoutc :as layoutc]
-            [scattergories.page :as page]))
+            [scattergories.page :as page]
+            [scattergories.state :as state]))
 
-(defmethod page/render :room [_]
+(defn nickname-prompt [_]
+  (let [local-nickname-ratom (reagent/atom nil)]
+    (fn [nickname-ratom]
+      [:div.center-div.margin-top-plus-5
+       {:id "-nickname-prompt"}
+       [:h1 "Enter nickname to join room..."]
+       [:input {:type "text"
+                :id "-nickname-input"
+                :placeholder "Enter your nickname"
+                :value @local-nickname-ratom
+                :on-change #(reset! local-nickname-ratom (wjs/e-text %))}]
+       [:button {:id "-join-button"
+                 :on-click #(reset! nickname-ratom @local-nickname-ratom)}
+        "Join"]])))
+
+(defn room []
   [:div.main-container
+   {:id "-room"}
    [:div.left-container
     [:br]
     [:br]
@@ -27,6 +46,12 @@
       [:p "Food:"]
       [:input {:type "text" :id "Food" :name "Food"}]
       [:p "Really:"]
-      [:input {:type "text" :id "Really long name" :name "Really long name"}]]]]
-   [:div
-    [:br]]])
+      [:input {:type "text" :id "Really long name" :name "Really long name"}]]]]])
+
+(defn nickname-prompt-or-room [nickname-ratom]
+  (if-not @nickname-ratom
+    [nickname-prompt nickname-ratom]
+    (do (room))))
+
+(defmethod page/render :room [_]
+  [nickname-prompt-or-room state/nickname])
