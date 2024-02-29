@@ -1,7 +1,5 @@
 (ns scattergories.home
-  (:require [c3kit.apron.corec :as ccc]
-            [c3kit.bucket.api :as db]
-            [c3kit.wire.js :as wjs]
+  (:require [c3kit.wire.js :as wjs]
             [c3kit.wire.websocket :as ws]
             [reagent.core :as reagent]
             [scattergories.page :as page]))

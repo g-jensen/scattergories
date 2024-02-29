@@ -1,11 +1,8 @@
 (ns scattergories.home-spec
-  (:require-macros [speclj.core :refer [around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]]
-                   [c3kit.wire.spec-helperc :refer [should-not-select should-select]])
-  (:require [c3kit.apron.corec :as ccc]
-            [c3kit.wire.js :as wjs]
+  (:require-macros [speclj.core :refer [around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]])
+  (:require [c3kit.wire.js :as wjs]
             [scattergories.dark-souls :as ds]
             [scattergories.home :as sut]
-            [scattergories.state :as state]
             [c3kit.wire.spec-helper :as wire]))
 
 (defn stub-redirect! []
