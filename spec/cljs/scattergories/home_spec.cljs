@@ -34,7 +34,9 @@
 
     (it "updates value on change"
       (wire/change! "#-nickname-input" "Lautrec")
-      (should= "Lautrec" @state/nickname)))
+      (should= "Lautrec" (wire/value "#-nickname-input"))
+      (wire/change! "#-nickname-input" "Patches")
+      (should= "Patches" (wire/value "#-nickname-input"))))
 
   (context "create room"
     (before (wire/render [sut/home state/nickname]))
