@@ -2,6 +2,7 @@
   (:require [c3kit.apron.corec :as ccc]
             [c3kit.wire.js :as wjs]
             [c3kit.wire.websocket :as ws]
+            [clojure.string :as str]
             [reagent.core :as reagent]
             [scattergories.core :as cc]
             [scattergories.layoutc :as layoutc]
@@ -10,7 +11,7 @@
             [scattergories.state :as state]))
 
 (defn- join-room! []
-  (when (not (empty? @state/nickname))
+  (when (not (str/blank? @state/nickname))
     (ws/call! :room/join
               {:nickname @state/nickname :room-code (:room-code @page/state)}
               db/tx*)))

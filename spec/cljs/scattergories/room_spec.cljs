@@ -87,8 +87,8 @@
                                                {:nickname "Lautrec" :room-code "A8SBLK"}
                                                db/tx*]}))
 
-      (it "doesn't join room if empty nickname"
-        (wire/change! "#-nickname-input" "")
+      (it "doesn't join room if blank nickname"
+        (wire/change! "#-nickname-input" " ")
         (should= nil @state/nickname)
         (wire/click! "#-join-button")
         (should-not-have-invoked :ws/call!)))))

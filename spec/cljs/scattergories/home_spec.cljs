@@ -47,7 +47,7 @@
       (should-not-have-invoked :ws/call!))
 
     (it "does nothing if blank nickname"
-      (wire/change! "#-nickname-input" "")
+      (wire/change! "#-nickname-input" " ")
       (wire/click! "#-create-room-button")
       (should-not-have-invoked :ws/call!))
 

@@ -3,6 +3,7 @@
             [c3kit.apron.corec :as ccc]
             [c3kit.wire.js :as wjs]
             [c3kit.wire.websocket :as ws]
+            [clojure.string :as str]
             [scattergories.state :as state]
             [scattergories.page :as page]))
 
@@ -11,7 +12,7 @@
   (accountant/navigate! (str "/room/" code)))
 
 (defn- create-room! [nickname]
-  (when (not (empty? nickname))
+  (when (not (str/blank? nickname))
     (ws/call! :room/create {:nickname nickname} join-room!)))
 
 (defn home [nickname-ratom]
