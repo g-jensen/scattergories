@@ -39,6 +39,23 @@
                :max-width "100px"
                }]
 
+[:.small-button {
+                 :width "10px"
+                 :height "10px"
+                 }]
+
+[:.red-button {
+               :background-color "red"
+               }]
+
+[:.green-button {
+                 :background-color "green"
+               }]
+
+[:.gray-button {
+                :background-color "gray"
+               }]
+
 [:.no-margin {
               :margin "0px"
               }]

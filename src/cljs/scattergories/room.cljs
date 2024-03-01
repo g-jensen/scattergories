@@ -70,12 +70,19 @@
       (str minutes ":" (when (< seconds 10) "0") seconds))))
 
 (defn playing [room-ratom]
-  (let [interval (atom nil)
+  (let [answers (atom {})
+        interval (atom nil)
         time-left (reagent/atom (format-time-left @room-ratom))
-        update-time #(reset! time-left (format-time-left @room-ratom))]
+        delete-interval (fn [_] (when @interval (wjs/clear-interval @interval)))
+        update-time (fn [] (reset! time-left (format-time-left @room-ratom))
+                      (when (neg? (get-time-left @room-ratom))
+                        (delete-interval nil)
+                        (ws/call! :game/submit-answers @answers ccc/noop)))
+        create-interval (fn [_] (reset! interval (wjs/interval (time/seconds 1) update-time)))]
+
     (reagent/create-class
-    {:component-did-mount    (fn [_] (reset! interval (wjs/interval (time/seconds 1) update-time)))
-     :component-will-unmount (fn [_] (when @interval (wjs/clear-interval @interval)))
+    {:component-did-mount    create-interval
+     :component-will-unmount delete-interval
      :reagent-render
      (fn [room-ratom]
        [:<>
@@ -91,8 +98,39 @@
                           [:<>
                            [:p category]
                            [:input {:type "text"
-                                    :id (str "-" category)}]]))]
+                                    :id (str "-" category)
+                                    :on-change #(swap! answers assoc category (wjs/e-text %))}]]))]
           [:h1 {:id "-submitting"} "Tallying results..."])])})))
+
+(defn get-color [answer]
+  (cond
+    (= :bonus (:state answer)) "green"
+    (= :declined (:state answer)) "red"
+    :else "black"))
+
+(defn reviewing [room-ratom]
+  (let [idx 0
+        category (nth (:categories @room-ratom) idx 0)]
+    [:<>
+     [:h2.text-align-center "Results"]
+     [:h2.categories-data.text-align-center (str "Letter: " (:letter @room-ratom))]
+     [:h2.categories-data.text-align-center (str "Category: " category)]
+     (when (host? @room-ratom (get-me))
+      [:button "Next Category"])
+     (util/with-react-keys
+       (ccc/for-all [player @state/players]
+         (let [answers (db/find-by :answer :player (:id player))
+               answer (ccc/ffilter #(= category (:category %)) answers)
+               change-bonus #(ws/call! :game/update-answer {:answer-id (:id answer) :state :bonus} ccc/noop)
+               change-accepted #(ws/call! :game/update-answer {:answer-id (:id answer) :state :accepted} ccc/noop)
+               change-declined #(ws/call! :game/update-answer {:answer-id (:id answer) :state :declined} ccc/noop)]
+           [:div
+            (when (host? @room-ratom (get-me))
+              [:<>
+               [:button.small-button.green-button {:on-click change-bonus} " "]
+               [:button.small-button.gray-button {:on-click change-accepted} " "]
+               [:button.small-button.red-button {:on-click change-declined} " "]])
+            [:p {:style {:color (get-color answer)}} (str (:nickname player) ": " (:answer answer))]])))]))
 
 (defn room [room-ratom players-ratom]
   [:div.main-container
@@ -110,9 +148,10 @@
    [:div.center
     [:div.game-container
      [:h1 "Scattergories"]
-     (if-not (= :started (:state @room-ratom))
-       [waiting room-ratom]
-       [playing room-ratom])]]])
+     (cond
+       (= :started (:state @room-ratom)) [playing room-ratom]
+       (= :reviewing (:state @room-ratom)) [reviewing room-ratom]
+       :else [waiting room-ratom])]]])
 
 (defn nickname-prompt-or-room [nickname-ratom]
   [:div {:id "-prompt-or-room"}
@@ -129,7 +168,6 @@
   (= :lobby (:state room)))
 
 (defn maybe-render-room [room-ratom]
-  (prn "room" @room-ratom)
   (if-not @room-ratom
     [:h1 {:id "-room-not-found"} "Room not found!"]
     (if (or (lobby? @room-ratom) (get-me))
