@@ -8,6 +8,7 @@
             [scattergories.layoutc :as layoutc]
             [c3kit.bucket.api :as db]
             [scattergories.page :as page]
+            [scattergories.playerc :as playerc]
             [scattergories.state :as state]))
 
 (defn- join-room! []
@@ -33,7 +34,14 @@
                                  (join-room!))}
          "Join"]]])))
 
-(defn room [players-ratom]
+(defn get-me []
+  (when ws/client
+    (playerc/by-conn-id (:id (:connection @ws/client)))))
+
+(defn- host? [room player]
+  (= (:host room) (:id player)))
+
+(defn room [room-ratom players-ratom]
   [:div.main-container
    {:id "-room"}
    [:div.left-container
@@ -43,29 +51,42 @@
     [:ul
      [:<>
       (ccc/for-all [player @players-ratom]
-        [:li {:key (:id player)} (:nickname player)])]]]
+        [:li {:key (:id player)
+              :id  (str "-player-" (:id player))}
+         (str (:nickname player) (when (host? @room-ratom player) " (Host)"))])]]]
    [:div.center
     [:div.game-container
      [:h1 "Scattergories"]
-     [:div.letter-display
-      [:h2.categories-data "Letter: " [:span#letter "A"]]]
-     [:div.timer
-      [:h2.categories-data "Time Left: " [:span#time "180"] " seconds"]]
-     [:div.categories
-      [:p "Color:"]
-      [:input {:type "text" :id "Color" :name "Color"}]
-      [:p "Animal:"]
-      [:input {:type "text" :id "Animal" :name "Animal"}]
-      [:p "Food:"]
-      [:input {:type "text" :id "Food" :name "Food"}]
-      [:p "Really:"]
-      [:input {:type "text" :id "Really long name" :name "Really long name"}]]]]])
+     [:<>
+      [:h2.center.categories-data "Waiting for host to start game..."]
+      [:h3.center "How to play"]
+      [:p.text-align-center "When the host starts the game, you will be given a letter of the alphabet and a list of categories. The goal of the game is to find words in each category that start with the given letter."]
+      [:p.text-align-center "For example, if the letter is \"C\" and a category is \"Types of Fish,\" an answer for that category could be \"Carp\" and you would be awarded a point."]
+      [:p.text-align-center "At the end of a round, everyone's answer for each category will be shown. The host will then remove duplicate answers, awarding no points to players with that answer."]
+      (if (host? @room-ratom (get-me))
+        [:div.center
+         [:button {:id "-start-button"
+                   :on-click #(ws/call! :game/start {} db/tx*)} "Start Game"]])]
+     #_[:<>
+        [:div.letter-display
+         [:h2.categories-data "Letter: " [:span#letter "A"]]]
+        [:div.timer
+         [:h2.categories-data "Time Left: " [:span#time "180"] " seconds"]]
+        [:div.categories
+         [:p "Color:"]
+         [:input {:type "text" :id "Color" :name "Color"}]
+         [:p "Animal:"]
+         [:input {:type "text" :id "Animal" :name "Animal"}]
+         [:p "Food:"]
+         [:input {:type "text" :id "Food" :name "Food"}]
+         [:p "Really:"]
+         [:input {:type "text" :id "Really long name" :name "Really long name"}]]]]]])
 
 (defn nickname-prompt-or-room [nickname-ratom]
   [:div {:id "-prompt-or-room"}
    (if (str/blank? @nickname-ratom)
      [nickname-prompt nickname-ratom]
-     [room state/players])])
+     [room state/room state/players])])
 
 (defn- fetch-room []
   (ws/call! :room/fetch

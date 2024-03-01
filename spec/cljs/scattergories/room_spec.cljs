@@ -1,15 +1,20 @@
 (ns scattergories.room-spec
-  (:require-macros [speclj.core :refer [around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]]
+  (:require-macros [speclj.core :refer [redefs-around around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]]
                    [c3kit.wire.spec-helperc :refer [should-not-select should-select]])
   (:require [accountant.core :as accountant]
             [c3kit.wire.js :as wjs]
+            [reagent.core :as reagent]
             [scattergories.dark-souls :as ds]
             [scattergories.init :as init]
             [scattergories.page :as page]
             [scattergories.room :as sut]
             [c3kit.wire.spec-helper :as wire]
             [c3kit.bucket.api :as db]
-            [scattergories.state :as state]))
+            [scattergories.state :as state]
+            [c3kit.wire.websocket :as ws]))
+
+(def players-ratom (reagent/atom []))
+(def room-ratom (reagent/atom nil))
 
 (describe "Room"
   (init/install-reagent-db-atom!)
@@ -18,8 +23,12 @@
   (with-stubs)
   (wire/stub-ws)
   (wire/with-root-dom)
-  (ds/with-schemas)
-  (before (reset! state/nickname nil))
+  (ds/init-with-schemas)
+  (before (db/set-safety! false)
+          (db/clear)
+          (reset! state/nickname nil)
+          (reset! players-ratom [])
+          (reset! room-ratom nil))
 
 
   (it "fetches room on enter"
@@ -38,7 +47,8 @@
     ; once it works, it will probably fail ^this test
     ; TODO - [GMJ] Figure out why db/tx doesn't work in specs
     #_(it "renders room if found"
-      (db/tx @ds/depths)
+      (prn "depths" @ds/depths-atom)
+      (db/tx @ds/depths-atom)
       (flush)
       (should-not-select "#-room-not-found")
       (should-select "#-prompt-or-room")))
@@ -91,4 +101,45 @@
         (wire/change! "#-nickname-input" " ")
         (should= nil @state/nickname)
         (wire/click! "#-join-button")
-        (should-not-have-invoked :ws/call!)))))
+        (should-not-have-invoked :ws/call!))))
+
+  (context "room"
+    (before (wire/render [sut/room room-ratom players-ratom]))
+
+    (context "displays players"
+
+      (it "with one player"
+        (reset! players-ratom [@ds/frampt-atom])
+        (reset! room-ratom {:host (:id @ds/frampt-atom)})
+        (wire/flush)
+        (should-select (str "#-player-" (:id @ds/frampt-atom)))
+        (should= "Kingseeker Frampt (Host)" (wire/html (str "#-player-" (:id @ds/frampt-atom)))))
+
+      (it "with multiple players"
+        (reset! players-ratom [@ds/frampt-atom @ds/lautrec-atom])
+        (reset! room-ratom {:host (:id @ds/frampt-atom)})
+        (wire/flush)
+        (should-select (str "#-player-" (:id @ds/frampt-atom)))
+        (should-select (str "#-player-" (:id @ds/lautrec-atom)))
+        (should= "Kingseeker Frampt (Host)" (wire/html (str "#-player-" (:id @ds/frampt-atom))))
+        (should= "Lautrec" (wire/html (str "#-player-" (:id @ds/lautrec-atom))))))
+
+    (context "start button"
+      (redefs-around [sut/get-me (fn [] @ds/frampt-atom)])
+      (before (reset! players-ratom [@ds/frampt-atom @ds/lautrec-atom]))
+
+      (it "does display if user is host"
+        (reset! room-ratom {:host (:id @ds/frampt-atom)})
+        (wire/flush)
+        (should-select "#-start-button"))
+
+      (it "doesn't display if user is not host"
+        (reset! room-ratom {:host (:id @ds/lautrec-atom)})
+        (wire/flush)
+        (should-not-select "#-start-button"))
+
+      (it "starts game on click"
+        (reset! room-ratom {:host (:id @ds/frampt-atom)})
+        (wire/flush)
+        (wire/click! "#-start-button")
+        (should-have-invoked :ws/call! {:with [:game/start {} db/tx*]})))))
