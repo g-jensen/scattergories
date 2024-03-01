@@ -1,5 +1,6 @@
 (ns scattergories.game-spec
-  (:require [c3kit.apron.time :as time]
+  (:require [c3kit.apron.corec :as ccc]
+            [c3kit.apron.time :as time]
             [c3kit.apron.utilc :as utilc]
             [c3kit.bucket.api :as db]
             [c3kit.bucket.spec-helperc :as helperc]
@@ -163,5 +164,28 @@
   (context "ws-next-category"
     (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 
-    (it "without category selected"
-      (let []))))
+    (it "increments category index"
+      (db/tx (roomc/next-category-idx (assoc @firelink :categories (mapv str (range 0 10)))))
+      (let [response (sut/ws-next-category {:connection-id (:conn-id @lautrec)})]
+        (should= 1 (:category-idx (:payload response)))))
+
+    (it "dispatches room state and players"
+      (db/tx (roomc/next-category-idx (assoc @firelink :categories (mapv str (range 0 10)))))
+      (sut/ws-next-category {:connection-id (:conn-id @lautrec)})
+      (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                     :room/update
+                                                     (cons @firelink (map db/entity (:players @firelink)))]}))
+
+    (it "awards points according to state"
+      (db/tx (roomc/next-category-idx (assoc @firelink :categories (mapv str (range 0 10)))))
+      (playerc/add-answers! @lautrec {"0" "lautrec answer 1"
+                                      "1" "lautrec answer 2"})
+      (playerc/add-answers! @frampt {"0" "frampt answer"})
+      (let [lautrec-answer (db/entity (first (:answers @lautrec)))
+            frampt-answer   (db/entity (first (:answers @frampt)))]
+        (db/tx (assoc lautrec-answer :state :bonus))
+        (db/tx (assoc frampt-answer :state :declined))
+        (sut/ws-next-category {:connection-id (:conn-id @lautrec)}))
+      (should= 2 (:points @lautrec))
+      (should= 0 (:points @frampt))
+      (should= 0 (:points @patches)))))

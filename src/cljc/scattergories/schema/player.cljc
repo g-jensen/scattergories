@@ -13,6 +13,7 @@
   {:kind     (s/kind :player)
    :id       s/id
    :nickname {:type :string :validate s/present? :message "must be present"}
+   :points   {:type :long}
    :conn-id  {:type :string :message "must be a string"}
    :answers  {:type [:long]}
    })

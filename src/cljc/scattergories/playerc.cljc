@@ -8,7 +8,8 @@
 (defn ->player
   ([nickname]
    {:kind     :player
-    :nickname nickname})
+    :nickname nickname
+    :points   0})
   ([nickname conn-id]
    (merge (->player nickname)
           {:conn-id conn-id})))

@@ -86,3 +86,21 @@
             player (playerc/by-conn-id connection-id)
             room   (db/ffind-by :room :host (:id player))]
         (update-answer! room answer params))))
+
+(def point-fns {:accepted inc
+                :declined identity
+                :bonus    (comp inc inc)})
+
+(defn assign-points! [answer]
+  (let [player (db/entity (:player answer))]
+    (db/tx (update player :points (get point-fns (:state answer))))))
+
+(defn ws-next-category [{:keys [connection-id] :as request}]
+  (let [player (playerc/by-conn-id connection-id)
+        room   (roomc/by-player player)
+        answers (->> room :players (map db/entity) (map :answers) (map #(get % (:category-idx room))) (remove nil?))
+        room   (roomc/next-category-idx room)]
+    (doseq [answer (map db/entity answers)]
+      (assign-points! answer))
+    (room/push-to-room! room (cons room (map db/entity (:players room))))
+    (apic/ok (db/tx room))))
