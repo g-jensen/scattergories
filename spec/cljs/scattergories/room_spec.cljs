@@ -35,7 +35,7 @@
       (should-select "#-room-not-found")
       (should-not-select "#-prompt-or-room"))
 
-    ; once it works, it will probably fail this^ test
+    ; once it works, it will probably fail ^this test
     ; TODO - [GMJ] Figure out why db/tx doesn't work in specs
     #_(it "renders room if found"
       (db/tx @ds/depths)
