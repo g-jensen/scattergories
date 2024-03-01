@@ -61,6 +61,7 @@
    :room/fetch          'scattergories.room/ws-fetch-room
    :game/start          'scattergories.game/ws-start-game
    :game/submit-answers 'scattergories.game/ws-submit-answers
+   :game/update-answer  'scattergories.game/ws-update-answer
    })
 
 (defn sleep-for-10 [] (Thread/sleep 10000))
