@@ -165,7 +165,7 @@
           (wire/render [sut/room room-ratom players-ratom])
           (wire/flush)
           (should-have-invoked :interval)
-          (should= "180" (wire/html "#time"))))
+          (should= "3:00" (wire/html "#time"))))
 
       (it "renders categories"
         (swap! room-ratom assoc :categories ["dogs" "cats" "others"])

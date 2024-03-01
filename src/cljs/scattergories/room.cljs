@@ -57,15 +57,24 @@
                 :on-click #(ws/call! :game/start {} db/tx)} "Start Game"]])])
 
 (defn get-time-left [room]
-  (str (time/millis->seconds (time/millis-between
-                               (time/after (:round-start room) gamec/round-length)
-                               (time/now)))))
+  (time/millis->seconds (time/millis-between
+                          (time/after (:round-start room) gamec/round-length)
+                          (time/now))))
+
+(defn format-time-left [room]
+  (let [total-seconds (get-time-left room)
+        minutes (quot total-seconds 60)
+        seconds (mod total-seconds 60)]
+    (if (neg? total-seconds)
+      "0:00"
+      (str minutes ":" (when (< seconds 10) "0") seconds))))
 
 (defn playing [room-ratom]
   (let [interval (atom nil)
-        time-left (reagent/atom (get-time-left @room-ratom))]
+        time-left (reagent/atom (format-time-left @room-ratom))
+        update-time #(reset! time-left (format-time-left @room-ratom))]
     (reagent/create-class
-    {:component-did-mount    (fn [_] (reset! interval (wjs/interval (time/seconds 1) #(reset! time-left (get-time-left @room-ratom)))))
+    {:component-did-mount    (fn [_] (reset! interval (wjs/interval (time/seconds 1) update-time)))
      :component-will-unmount (fn [_] (when @interval (wjs/clear-interval @interval)))
      :reagent-render
      (fn [room-ratom]
@@ -73,7 +82,7 @@
         [:div.letter-display
          [:h2.categories-data "Letter: " [:span#letter {:id "-letter"} (:letter @room-ratom)]]]
         [:div.timer
-         [:h2.categories-data "Time Left: " [:span#time @time-left] " seconds"]]
+         [:h2.categories-data "Time Left: " [:span#time @time-left]]]
         [:div.categories
          (util/with-react-keys
            (ccc/for-all [category (:categories @room-ratom)]
