@@ -41,6 +41,34 @@
 (defn- host? [room player]
   (= (:host room) (:id player)))
 
+(defn waiting [room-ratom]
+  [:<>
+   [:h2.center.categories-data "Waiting for host to start game..."]
+   [:h3.center "How to play"]
+   [:p.text-align-center "When the host starts the game, you will be given a letter of the alphabet and a list of categories. The goal of the game is to find words in each category that start with the given letter."]
+   [:p.text-align-center "For example, if the letter is \"C\" and a category is \"Types of Fish,\" an answer for that category could be \"Carp\" and you would be awarded a point."]
+   [:p.text-align-center "At the end of a round, everyone's answer for each category will be shown. The host will then remove duplicate answers, awarding no points to players with that answer."]
+   (if (host? @room-ratom (get-me))
+     [:div.center
+      [:button {:id "-start-button"
+                :on-click #(ws/call! :game/start {} db/tx)} "Start Game"]])])
+
+(defn playing [room-ratom]
+  [:<>
+   [:div.letter-display
+    [:h2.categories-data "Letter: " [:span#letter "A"]]]
+   [:div.timer
+    [:h2.categories-data "Time Left: " [:span#time "180"] " seconds"]]
+   [:div.categories
+    [:p "Color:"]
+    [:input {:type "text" :id "Color" :name "Color"}]
+    [:p "Animal:"]
+    [:input {:type "text" :id "Animal" :name "Animal"}]
+    [:p "Food:"]
+    [:input {:type "text" :id "Food" :name "Food"}]
+    [:p "Really:"]
+    [:input {:type "text" :id "Really long name" :name "Really long name"}]]])
+
 (defn room [room-ratom players-ratom]
   [:div.main-container
    {:id "-room"}
@@ -57,30 +85,9 @@
    [:div.center
     [:div.game-container
      [:h1 "Scattergories"]
-     [:<>
-      [:h2.center.categories-data "Waiting for host to start game..."]
-      [:h3.center "How to play"]
-      [:p.text-align-center "When the host starts the game, you will be given a letter of the alphabet and a list of categories. The goal of the game is to find words in each category that start with the given letter."]
-      [:p.text-align-center "For example, if the letter is \"C\" and a category is \"Types of Fish,\" an answer for that category could be \"Carp\" and you would be awarded a point."]
-      [:p.text-align-center "At the end of a round, everyone's answer for each category will be shown. The host will then remove duplicate answers, awarding no points to players with that answer."]
-      (if (host? @room-ratom (get-me))
-        [:div.center
-         [:button {:id "-start-button"
-                   :on-click #(ws/call! :game/start {} db/tx*)} "Start Game"]])]
-     #_[:<>
-        [:div.letter-display
-         [:h2.categories-data "Letter: " [:span#letter "A"]]]
-        [:div.timer
-         [:h2.categories-data "Time Left: " [:span#time "180"] " seconds"]]
-        [:div.categories
-         [:p "Color:"]
-         [:input {:type "text" :id "Color" :name "Color"}]
-         [:p "Animal:"]
-         [:input {:type "text" :id "Animal" :name "Animal"}]
-         [:p "Food:"]
-         [:input {:type "text" :id "Food" :name "Food"}]
-         [:p "Really:"]
-         [:input {:type "text" :id "Really long name" :name "Really long name"}]]]]]])
+     (if-not (= :started (:state @room-ratom))
+       [waiting room-ratom]
+       [playing room-ratom])]]])
 
 (defn nickname-prompt-or-room [nickname-ratom]
   [:div {:id "-prompt-or-room"}

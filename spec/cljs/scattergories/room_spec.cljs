@@ -142,4 +142,4 @@
         (reset! room-ratom {:host (:id @ds/frampt-atom)})
         (wire/flush)
         (wire/click! "#-start-button")
-        (should-have-invoked :ws/call! {:with [:game/start {} db/tx*]})))))
+        (should-have-invoked :ws/call! {:with [:game/start {} db/tx]})))))
