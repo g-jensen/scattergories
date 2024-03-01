@@ -41,8 +41,7 @@
   (context "state"
 
     (it "start!"
-      (sut/start! @firelink)
-      (should= :started (:state @firelink))))
+      (should= :started (:state (sut/start @firelink)))))
 
   (context "join-room!"
 

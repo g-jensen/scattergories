@@ -4,6 +4,7 @@
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
             [c3kit.wire.websocket :as ws]
+            [scattergories.categories :as categories]
             [scattergories.dark-souls :as ds :refer [firelink depths lautrec frampt patches]]
             [scattergories.dispatch :as dispatch]
             [scattergories.playerc :as playerc]
@@ -32,6 +33,17 @@
             response (sut/ws-start-game {:connection-id (:conn-id host-player)})]
         (should= :ok (:status response))
         (should= (assoc @ds/firelink :state :started) (:payload response))))
+
+    (it "starts game"
+      (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
+        (should= :ok (:status response))
+        (should= :started (:state (:payload response)))))
+
+    (it "includes categories"
+      (with-redefs [shuffle               (stub :shuffle {:invoke reverse})
+                    categories/categories (map str (range 0 100))]
+        (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
+          (should= (map str (reverse (range 90 100))) (:categories (:payload response))))))
 
     (it "notifies players of game start"
       (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
