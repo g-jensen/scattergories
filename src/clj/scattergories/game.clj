@@ -32,7 +32,8 @@
     (while (and (not (all-submitted? room))
                 (< (time/millis-between (time/now) start-time) timeout))
       (Thread/sleep 1000))
-    (let [room    (assoc (roomc/next-category-idx room) :state :reviewing)
+    (let [room    (assoc room :state :reviewing
+                              :category-idx 0)
           players (ccc/map-all db/entity (:players room))
           answers (roomc/find-answers room)]
       (db/tx room)
@@ -93,7 +94,8 @@
 
 (defn assign-points! [answer]
   (let [player (db/entity (:player answer))]
-    (db/tx (update player :points (get point-fns (:state answer))))))
+    (when player
+      (db/tx (update player :points (get point-fns (:state answer)))))))
 
 (defn maybe-remove-answers [room players]
   (when (= :lobby (:state room))
@@ -102,12 +104,14 @@
 (defn ws-next-category [{:keys [connection-id] :as request}]
   (let [player (playerc/by-conn-id connection-id)
         room   (roomc/by-player player)
-        answers (->> room :players (map db/entity) (map :answers) (map #(get % (:category-idx room))) (remove nil?))
+        category (nth (:categories room) (:category-idx room))
+        answers (->> room :players (map db/entity) (map :answers) (map #(map db/entity %))
+                     (map #(first (filter (fn [ans] (= category (:category ans))) %))))
         room   (roomc/next-category-idx room)
         room   (if (:category-idx room) room (assoc room :state :lobby))
         players (map db/entity (:players room))]
-    (doseq [answer (map db/entity answers)]
+    (doseq [answer answers]
       (assign-points! answer))
     (maybe-remove-answers room players)
-    (room/push-to-room! room (cons room players))
+    (room/push-to-room! room (cons room (map db/entity (:players room))))
     (apic/ok (db/tx room))))

@@ -134,7 +134,6 @@
             [:p {:style {:color (get-color answer)}} (str (:nickname player) ": " (:answer answer))]])))]))
 
 (defn room [room-ratom players-ratom]
-  (prn "@players-ratom: " @players-ratom)
   [:div.main-container
    {:id "-room"}
    [:div.left-container
