@@ -13,6 +13,7 @@
 
 (defn install-legend! []
   (legend/init! {:room       room/room
+                 :answer     player/answer
                  :player     player/player
                  :db/retract legend/retract
                  }))

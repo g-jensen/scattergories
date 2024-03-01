@@ -23,3 +23,17 @@
         (room/push-room! room)
         (apic/ok room))
       (apic/fail nil "Only the host can start the game!"))))
+
+(defn maybe-not-map? [{:keys [payload]}]
+  (when (not (map? payload))
+    (apic/fail nil "Answer payload must be a map!")))
+(defn maybe-player-not-found [player]
+  (when (not player)
+    (apic/fail nil "Player not found!")))
+
+(defn ws-submit-answers [{:keys [payload connection-id] :as request}]
+  (or (maybe-not-map? request)
+      (let [player (playerc/by-conn-id connection-id)]
+        (or (maybe-player-not-found player)
+            (do (playerc/add-answers! player payload)
+                (apic/ok))))))

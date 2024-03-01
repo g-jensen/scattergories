@@ -5,6 +5,7 @@
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
             [c3kit.wire.websocket :as ws]
+            [scattergories.answerc :as answerc]
             [scattergories.categories :as categories]
             [scattergories.dark-souls :as ds :refer [firelink depths lautrec frampt patches]]
             [scattergories.dispatch :as dispatch]
@@ -62,4 +63,28 @@
         (should= :ok (:status response))
         (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
                                                        :room/update
-                                                       [@firelink]]})))))
+                                                       [@firelink]]}))))
+
+  (context "ws-submit-answers"
+
+    (it "fails if payload not a map"
+      (let [response (sut/ws-submit-answers {:payload       :blah
+                                             :connection-id (:conn-id @patches)})]
+        (should= :fail (:status response))
+        (should= "Answer payload must be a map!" (apic/flash-text response 0))))
+
+    (it "fails if player not found"
+      (let [response (sut/ws-submit-answers {:payload       {}
+                                             :connection-id (:conn-id :not-an-id)})]
+        (should= :fail (:status response))
+        (should= "Player not found!" (apic/flash-text response 0))))
+
+    (it "adds answers to player"
+      (let [answers  {"category1" "answer1"
+                      "category2" "answer2"
+                      "category3" "answer3"}
+            response (sut/ws-submit-answers {:payload       answers
+                                             :connection-id (:conn-id @patches)})]
+        (should= :ok (:status response))
+        (should= nil (:payload response))
+        (should= (map answerc/->answer answers) (:answers @patches))))))

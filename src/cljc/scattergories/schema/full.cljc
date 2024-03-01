@@ -4,4 +4,5 @@
 
 (def full-schema
   [room/room
+   player/answer
    player/player])
