@@ -144,11 +144,23 @@
           (should-have-invoked :ws/call! {:with [:game/start {} db/tx]}))))
 
     (context "playing"
+      (redefs-around [time/now (constantly (time/now))])
       (before (swap! room-ratom assoc
                      :state :started
                      :letter nil
-                     :round-start (js/Date. 0)
+                     :round-start (time/now)
                      :categories []))
+
+      (it "does render categories if time left"
+        (wire/flush)
+        (should-not-select "#-submitting")
+        (should-select "#-categories"))
+
+      (it "doesn't render categories if time is up"
+        (swap! room-ratom assoc :round-start (js/Date. 0))
+        (wire/flush)
+        (should-select "#-submitting")
+        (should-not-select "#-categories"))
 
       (it "renders letter"
         (swap! room-ratom assoc :letter "K")
@@ -159,8 +171,7 @@
         (should= "M" (wire/html "#-letter")))
 
       (it "renders time left"
-        (with-redefs [wjs/interval (stub :interval)
-                      time/now (constantly (time/now))]
+        (with-redefs [wjs/interval (stub :interval)]
           (swap! room-ratom assoc :round-start (time/now))
           (wire/render [sut/room room-ratom players-ratom])
           (wire/flush)

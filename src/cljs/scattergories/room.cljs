@@ -83,13 +83,16 @@
          [:h2.categories-data "Letter: " [:span#letter {:id "-letter"} (:letter @room-ratom)]]]
         [:div.timer
          [:h2.categories-data "Time Left: " [:span#time @time-left]]]
-        [:div.categories
-         (util/with-react-keys
-           (ccc/for-all [category (:categories @room-ratom)]
-                        [:<>
-                         [:p category]
-                         [:input {:type "text"
-                                  :id (str "-" category)}]]))]])})))
+        (if (pos? (get-time-left @room-ratom))
+          [:div.categories
+           {:id "-categories"}
+           (util/with-react-keys
+             (ccc/for-all [category (:categories @room-ratom)]
+                          [:<>
+                           [:p category]
+                           [:input {:type "text"
+                                    :id (str "-" category)}]]))]
+          [:h1 {:id "-submitting"} "Submitting results..."])])})))
 
 (defn room [room-ratom players-ratom]
   [:div.main-container
