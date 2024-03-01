@@ -121,4 +121,40 @@
         (should= :ok (:status response))
         (should= nil (:payload response))
         (let [answers (db/find :answer)]
-          (should= (map :id answers) (:answers @patches)))))))
+          (should= (map :id answers) (:answers @patches))))))
+
+  (context "ws-update-answer"
+    (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
+
+    (it "fails if answer not found"
+      (let [response (sut/ws-update-answer {:payload       {:answer-id :not-an-id
+                                                            :state     :bonus}
+                                            :connection-id (:conn-id @lautrec)})]
+        (should= :fail (:status response))
+        (should= "Answer not found!" (apic/flash-text response 0))))
+
+    (it "fails if state is invalid"
+      (let [response (sut/ws-update-answer {:payload       {:answer-id :not-an-id
+                                                            :state     :blah}
+                                            :connection-id (:conn-id @lautrec)})]
+        (should= :fail (:status response))
+        (should= "Invalid answer state!" (apic/flash-text response 0))))
+
+    (it "saves new answer state"
+      (playerc/add-answers! @lautrec {"category1" "lautrec answer"})
+      (let [answer   (first (answerc/by-player @lautrec))
+            response (sut/ws-update-answer {:payload       {:answer-id (:id answer)
+                                                            :state     :bonus}
+                                            :connection-id (:conn-id @lautrec)})]
+        (should= :ok (:status response))
+        (should= :bonus (:state (first (answerc/by-player @lautrec))))))
+
+    (it "dispatches new answer state to players"
+      (playerc/add-answers! @lautrec {"category1" "lautrec answer"})
+      (let [answer   (first (answerc/by-player @lautrec))]
+        (sut/ws-update-answer {:payload       {:answer-id (:id answer)
+                                               :state     :bonus}
+                               :connection-id (:conn-id @lautrec)})
+        (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                       :room/update
+                                                       [(first (answerc/by-player @lautrec))]]})))))

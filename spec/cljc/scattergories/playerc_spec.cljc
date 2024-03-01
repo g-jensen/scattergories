@@ -39,7 +39,8 @@
     (it "one answer"
       (sut/add-answers! @lautrec {"category1" "answer1"})
       (let [answer (db/ffind :answer)]
-        (should= [(:id answer)] (:answers @lautrec))))
+        (should= [(:id answer)] (:answers @lautrec))
+        (should= (:id @lautrec) (:player answer))))
 
     (it "many answers"
       (sut/add-answers! @lautrec {"category1" "answer1"

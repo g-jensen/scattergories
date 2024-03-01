@@ -3,6 +3,7 @@
             [c3kit.apron.time :as time]
             [c3kit.bucket.api :as db]
             [c3kit.wire.apic :as apic]
+            [scattergories.answerc :as answerc]
             [scattergories.categories :as categories]
             [scattergories.gamec :as gamec]
             [scattergories.playerc :as playerc]
@@ -49,7 +50,7 @@
         (apic/ok room))
       (apic/fail nil "Only the host can start the game!"))))
 
-(defn maybe-not-map? [{:keys [payload]}]
+(defn maybe-not-map [{:keys [payload]}]
   (when (not (map? payload))
     (apic/fail nil "Answer payload must be a map!")))
 (defn maybe-player-not-found [player]
@@ -62,6 +63,26 @@
           (apic/ok))))
 
 (defn ws-submit-answers [{:keys [payload connection-id] :as request}]
-  (or (maybe-not-map? request)
+  (or (maybe-not-map request)
       (let [player (playerc/by-conn-id connection-id)]
         (submit-answers! player payload))))
+
+(defn maybe-invalid-state [{:keys [state] :as payload}]
+  (when-not (contains? #{:accepted :bonus :declined} state)
+    (apic/fail nil "Invalid answer state!")))
+(defn maybe-answer-not-found [answer]
+  (when-not answer
+    (apic/fail nil "Answer not found!")))
+
+(defn update-answer! [room answer {:keys [state] :as payload}]
+  (or (maybe-answer-not-found answer)
+      (let [answer (answerc/update-answer! answer state)]
+        (room/push-to-room! room [answer])
+        (apic/ok))))
+
+(defn ws-update-answer [{:keys [payload connection-id] :as request}]
+  (or (maybe-invalid-state payload)
+      (let [answer (db/entity (:answer-id payload))
+            player (playerc/by-conn-id connection-id)
+            room   (db/ffind-by :room :host (:id player))]
+        (update-answer! room answer payload))))

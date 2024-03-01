@@ -4,6 +4,8 @@
 (def answer
   {:kind     (s/kind :answer)
    :id       s/id
+   :player   {:type :long :validate s/present? :message "must be present"}
+   :state    {:type :keyword :validate s/present? :message "must be present"}
    :category {:type :string :validate s/present? :message "must be present"}
    :answer   {:type :string :validate s/present? :message "must be present"}})
 
