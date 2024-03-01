@@ -132,7 +132,6 @@
                     categories/categories (take 10 (map str (range 0 10)))])
 
     (it "gets random categories"
-      (prn "categories/categories: " categories/categories)
       (should= ["9" "8" "7"] (take 3 (sut/categories))))
 
     #_(it "doesn't repeat"
