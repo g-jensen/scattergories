@@ -1,5 +1,6 @@
 (ns scattergories.game-spec
-  (:require [c3kit.apron.utilc :as utilc]
+  (:require [c3kit.apron.time :as time]
+            [c3kit.apron.utilc :as utilc]
             [c3kit.bucket.api :as db]
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
@@ -44,6 +45,12 @@
                     categories/categories (map str (range 0 100))]
         (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
           (should= (map str (reverse (range 90 100))) (:categories (:payload response))))))
+
+    (it "includes round start time"
+      (with-redefs [time/now (constantly (time/now))]
+        (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
+          (should= :ok (:status response))
+          (should= (time/now) (:round-start (:payload response))))))
 
     (it "notifies players of game start"
       (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]

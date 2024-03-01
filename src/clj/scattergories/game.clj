@@ -1,5 +1,6 @@
 (ns scattergories.game
   (:require [c3kit.apron.corec :as ccc]
+            [c3kit.apron.time :as time]
             [c3kit.bucket.api :as db]
             [c3kit.wire.apic :as apic]
             [scattergories.categories :as categories]
@@ -9,7 +10,8 @@
 
 (defn start-round! [room]
   (let [room (-> (roomc/start room)
-                 (assoc :categories (take 10 (roomc/categories))))]
+                 (assoc :categories (take 10 (roomc/categories)))
+                 (assoc :round-start (time/now)))]
     (db/tx room)))
 
 (defn ws-start-game [{:keys [connection-id] :as request}]
