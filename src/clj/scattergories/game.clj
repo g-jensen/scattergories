@@ -17,6 +17,6 @@
         room (db/ffind-by :room :host (:id player))]
     (if room
       (let [room (start-round! room)]
-        (room/push-to-room! room [room])
+        (room/push-room! room)
         (apic/ok room))
       (apic/fail nil "Only the host can start the game!"))))
