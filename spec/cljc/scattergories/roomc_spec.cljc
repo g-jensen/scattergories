@@ -48,6 +48,22 @@
     (it "picks random letter (excluding Q U V X Y Z)"
       (should= "W" (:letter (sut/add-letter @firelink)))))
 
+  (context "next-category-idx"
+
+    (it "with no idx set"
+      (let [room (assoc (sut/->room "shrine") :categories (mapv str (range 0 10)))]
+        (should= 0 (:category-idx (sut/next-category-idx room)))))
+
+    (it "with idx within range"
+      (let [room (assoc (sut/->room "shrine") :categories (mapv str (range 0 10))
+                                              :category-idx 0)]
+        (should= 1 (:category-idx (sut/next-category-idx room)))))
+
+    (it "with idx at max range"
+      (let [room (assoc (sut/->room "shrine") :categories (mapv str (range 0 10))
+                                              :category-idx 9)]
+        (should-be-nil (:category-idx (sut/next-category-idx room))))))
+
   (context "join-room!"
 
     (it "first user to join becomes host"

@@ -40,7 +40,8 @@
             players (map db/entity (:players @firelink))]
         (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
                                                        :room/update
-                                                       (cons (assoc @firelink :state :reviewing)
+                                                       (cons (assoc @firelink :state :reviewing
+                                                                              :category-idx 0)
                                                              (concat players answers))]})
         (should= :reviewing (:state @firelink))))
 
@@ -157,4 +158,10 @@
                                :connection-id (:conn-id @lautrec)})
         (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
                                                        :room/update
-                                                       [(first (answerc/by-player @lautrec))]]})))))
+                                                       [(first (answerc/by-player @lautrec))]]}))))
+
+  (context "ws-next-category"
+    (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
+
+    (it "without category selected"
+      (let []))))

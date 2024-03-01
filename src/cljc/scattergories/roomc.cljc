@@ -28,6 +28,13 @@
   (let [letter (first (shuffle letters))]
     (assoc room :letter letter)))
 
+(defn next-category-idx [room]
+  (if (:category-idx room)
+    (if (< (:category-idx room) (dec (count (:categories room))))
+      (update room :category-idx inc)
+      (dissoc room :category-idx))
+    (assoc room :category-idx 0)))
+
 (defn remove-player [{:keys [players] :as room} player]
   (let [id (playerc/or-id player)
         players (remove #{id} players)]

@@ -32,7 +32,7 @@
     (while (and (not (all-submitted? room))
                 (< (time/millis-between (time/now) start-time) timeout))
       (Thread/sleep 1000))
-    (let [room    (assoc room :state :reviewing)
+    (let [room    (assoc (roomc/next-category-idx room) :state :reviewing)
           players (ccc/map-all db/entity (:players room))
           answers (roomc/find-answers room)]
       (db/tx room)
