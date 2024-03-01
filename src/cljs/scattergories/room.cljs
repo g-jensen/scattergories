@@ -50,7 +50,9 @@
    [:h3.center "How to play"]
    [:p.text-align-center "When the host starts the game, you will be given a letter of the alphabet and a list of categories. The goal of the game is to find words in each category that start with the given letter."]
    [:p.text-align-center "For example, if the letter is \"C\" and a category is \"Types of Fish,\" an answer for that category could be \"Carp\" and you would be awarded a point."]
-   [:p.text-align-center "At the end of a round, everyone's answer for each category will be shown. The host will then remove duplicate answers, awarding no points to players with that answer."]
+   [:p.text-align-center "Any number of words in the answer is allowed as long as the first word starts with the correct letter. For example, with a category of \"vegetable\" and a letter of \"C\", words such as \"cauliflower\", \"carrot\" and \"collard greens\" are acceptable, but \"broccoli\" is not (wrong initial letter), nor is \"citrus\" (wrong category)"]
+   [:p.text-align-center "At the end of a round, everyone's answer for each category will be shown. Duplicate answers will be removed, awarding no points to players with that answer."]
+   [:p.text-align-center "If for some reason a player thinks someone's answer does not fit the category (for instance, \"knuckle\" for the category \"types of sandwich\"), a player may challenge that answer. When challenged, all players vote on the validity of that answer. If the vote is a tie, the vote of the player who is being challenged is thrown out."]
    (if (host? @room-ratom (get-me))
      [:div.center
       [:button {:id "-start-button"
