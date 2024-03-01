@@ -3,7 +3,6 @@
             [c3kit.apron.time :as time]
             [c3kit.bucket.api :as db]
             [c3kit.wire.apic :as apic]
-            [scattergories.answerc :as answerc]
             [scattergories.categories :as categories]
             [scattergories.gamec :as gamec]
             [scattergories.playerc :as playerc]
@@ -50,8 +49,8 @@
         (apic/ok room))
       (apic/fail nil "Only the host can start the game!"))))
 
-(defn maybe-not-map [{:keys [payload]}]
-  (when (not (map? payload))
+(defn maybe-not-map? [{:keys [params]}]
+  (when (not (map? params))
     (apic/fail nil "Answer payload must be a map!")))
 (defn maybe-player-not-found [player]
   (when (not player)
@@ -62,27 +61,27 @@
       (do (playerc/add-answers! player answers)
           (apic/ok))))
 
-(defn ws-submit-answers [{:keys [payload connection-id] :as request}]
-  (or (maybe-not-map request)
+(defn ws-submit-answers [{:keys [params connection-id] :as request}]
+  (or (maybe-not-map? request)
       (let [player (playerc/by-conn-id connection-id)]
-        (submit-answers! player payload))))
+        (submit-answers! player params))))
 
-(defn maybe-invalid-state [{:keys [state] :as payload}]
+(defn maybe-invalid-state [{:keys [state] :as params}]
   (when-not (contains? #{:accepted :bonus :declined} state)
     (apic/fail nil "Invalid answer state!")))
 (defn maybe-answer-not-found [answer]
   (when-not answer
     (apic/fail nil "Answer not found!")))
 
-(defn update-answer! [room answer {:keys [state] :as payload}]
+(defn update-answer! [room answer {:keys [state] :as params}]
   (or (maybe-answer-not-found answer)
       (let [answer (answerc/update-answer! answer state)]
         (room/push-to-room! room [answer])
         (apic/ok))))
 
-(defn ws-update-answer [{:keys [payload connection-id] :as request}]
-  (or (maybe-invalid-state payload)
-      (let [answer (db/entity (:answer-id payload))
+(defn ws-update-answer [{:keys [params connection-id] :as request}]
+  (or (maybe-invalid-state params)
+      (let [answer (db/entity (:answer-id params))
             player (playerc/by-conn-id connection-id)
             room   (db/ffind-by :room :host (:id player))]
-        (update-answer! room answer payload))))
+        (update-answer! room answer params))))
