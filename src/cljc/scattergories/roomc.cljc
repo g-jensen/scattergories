@@ -1,5 +1,6 @@
 (ns scattergories.roomc
   (:require [c3kit.apron.utilc :as utilc]
+            [c3kit.apron.corec :as ccc]
             [c3kit.bucket.api :as db]
             [scattergories.categories :as categories]
             [scattergories.playerc :as playerc]))
@@ -7,6 +8,7 @@
 (defn ->room [code]
   {:kind    :room
    :code    code
+   :state   :lobby
    :players []})
 
 (defn create-room! [code]
@@ -18,6 +20,9 @@
   (let [id      (playerc/or-id player)
         players (conj players id)]
     (assoc room :players players)))
+
+(defn start! [room]
+  (db/tx (assoc room :state :started)))
 
 (defn remove-player [{:keys [players] :as room} player]
   (let [id (playerc/or-id player)

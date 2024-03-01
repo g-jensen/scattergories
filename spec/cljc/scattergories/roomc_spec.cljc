@@ -18,7 +18,11 @@
 
     (it "assigns code"
       (sut/create-room! ds/shrine-code)
-      (should= ds/shrine-code (:code (db/ffind-by :room :code ds/shrine-code)))))
+      (should= ds/shrine-code (:code (db/ffind-by :room :code ds/shrine-code))))
+
+    (it "sets initial state"
+      (sut/create-room! ds/shrine-code)
+      (should= :lobby (:state (db/ffind-by :room :code ds/shrine-code)))))
 
   (context "add-player"
 
@@ -33,6 +37,12 @@
     (it "to room with many players"
       (let [room (sut/add-player {:players [123 124]} 125)]
         (should= [123 124 125] (:players room)))))
+
+  (context "state"
+
+    (it "start!"
+      (sut/start! @firelink)
+      (should= :started (:state @firelink))))
 
   (context "join-room!"
 

@@ -18,16 +18,24 @@
   (ds/init-with-schemas)
 
   (context "ws-start-game"
+    (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 
     (it "fails if connection-id is not host"
-      (let [non-host-player (playerc/by-nickname "Patches")
+      (let [non-host-player @patches
             response (sut/ws-start-game {:connection-id (:conn-id non-host-player)})]
         (should= :fail (:status response))
         (should-be-nil (:payload response))
         (should= "Only the host can start the game!" (apic/flash-text response 0))))
 
     (it "succeeds if connection-id is host"
-      (let [host-player (playerc/by-nickname "Lautrec")
-            response (sut/ws-start-game {:connection-id (:id host-player)})]
+      (let [host-player @lautrec
+            response (sut/ws-start-game {:connection-id (:conn-id host-player)})]
         (should= :ok (:status response))
-        (should= (assoc @ds/depths :state :started) (:payload response))))))
+        (should= (assoc @ds/firelink :state :started) (:payload response))))
+
+    (it "notifies players of game start"
+      (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
+        (should= :ok (:status response))
+        (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                       :room/update
+                                                       [@firelink]]})))))

@@ -45,7 +45,7 @@
         (maybe-nonexistent-room room)
         (apic/ok (cons room players)))))
 
-(defn- push-to-room! [room payload]
+(defn push-to-room! [room payload]
   (let [players (map db/entity (:players room))]
     (dispatch/push-to-players! players :room/update payload)))
 
