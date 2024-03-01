@@ -165,19 +165,22 @@
     (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 
     (it "increments category index"
-      (db/tx (roomc/next-category-idx (assoc @firelink :categories (mapv str (range 0 10)))))
+      (db/tx (roomc/next-category-idx (assoc @firelink :state :reviewing
+                                                       :categories (mapv str (range 0 10)))))
       (let [response (sut/ws-next-category {:connection-id (:conn-id @lautrec)})]
         (should= 1 (:category-idx (:payload response)))))
 
     (it "dispatches room state and players"
-      (db/tx (roomc/next-category-idx (assoc @firelink :categories (mapv str (range 0 10)))))
+      (db/tx (roomc/next-category-idx (assoc @firelink :state :reviewing
+                                                       :categories (mapv str (range 0 10)))))
       (sut/ws-next-category {:connection-id (:conn-id @lautrec)})
       (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
                                                      :room/update
                                                      (cons @firelink (map db/entity (:players @firelink)))]}))
 
     (it "awards points according to state"
-      (db/tx (roomc/next-category-idx (assoc @firelink :categories (mapv str (range 0 10)))))
+      (db/tx (roomc/next-category-idx (assoc @firelink :state :reviewing
+                                                       :categories (mapv str (range 0 10)))))
       (playerc/add-answers! @lautrec {"0" "lautrec answer 1"
                                       "1" "lautrec answer 2"})
       (playerc/add-answers! @frampt {"0" "frampt answer"})
@@ -188,4 +191,17 @@
         (sut/ws-next-category {:connection-id (:conn-id @lautrec)}))
       (should= 2 (:points @lautrec))
       (should= 0 (:points @frampt))
-      (should= 0 (:points @patches)))))
+      (should= 0 (:points @patches)))
+
+    (it "resets answers and room if last category index"
+      (db/tx (roomc/next-category-idx (assoc @firelink :state :reviewing
+                                                       :categories (mapv str (range 0 1)))))
+      (playerc/add-answers! @lautrec {"0" "lautrec answer 1"})
+      (playerc/add-answers! @frampt {"0" "frampt answer"})
+      (sut/ws-next-category {:connection-id (:conn-id @lautrec)})
+      (should= 1 (:points @lautrec))
+      (should= 1 (:points @frampt))
+      (should= 0 (:points @patches))
+      (should= :lobby (:state @firelink))
+      (should (empty? (roomc/find-answers @firelink)))
+      )))

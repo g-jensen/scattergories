@@ -95,12 +95,19 @@
   (let [player (db/entity (:player answer))]
     (db/tx (update player :points (get point-fns (:state answer))))))
 
+(defn maybe-remove-answers [room players]
+  (when (= :lobby (:state room))
+    (db/tx* (map #(dissoc % :answers) players))))
+
 (defn ws-next-category [{:keys [connection-id] :as request}]
   (let [player (playerc/by-conn-id connection-id)
         room   (roomc/by-player player)
         answers (->> room :players (map db/entity) (map :answers) (map #(get % (:category-idx room))) (remove nil?))
-        room   (roomc/next-category-idx room)]
+        room   (roomc/next-category-idx room)
+        room   (if (:category-idx room) room (assoc room :state :lobby))
+        players (map db/entity (:players room))]
     (doseq [answer (map db/entity answers)]
       (assign-points! answer))
-    (room/push-to-room! room (cons room (map db/entity (:players room))))
+    (maybe-remove-answers room players)
+    (room/push-to-room! room (cons room players))
     (apic/ok (db/tx room))))
