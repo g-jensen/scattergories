@@ -59,6 +59,7 @@
    :room/create 'scattergories.room/ws-create-room
    :room/join   'scattergories.room/ws-join-room
    :room/fetch  'scattergories.room/ws-fetch-room
+   :game/start  'scattergories.game/ws-start-game
    })
 
 (defn sleep-for-10 [] (Thread/sleep 10000))

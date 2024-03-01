@@ -60,7 +60,11 @@
   ;(test-route "/ajax/user/signin" :post scattergories.auth/ajax-login)
 
   ;; websocket handlers
-  ;(test-webs :user/fetch-data scattergories.auth/ws-fetch-user-data)
+  (test-webs :ws/close    scattergories.room/ws-leave-room)
+  (test-webs :room/create scattergories.room/ws-create-room)
+  (test-webs :room/join   scattergories.room/ws-join-room)
+  (test-webs :room/fetch  scattergories.room/ws-fetch-room)
+  (test-webs :game/start  scattergories.game/ws-start-game)
 
   (it "not-found global - nil - handled by http"
     (let [response (routes/handler {:uri "/blah" :request-method :get})]
