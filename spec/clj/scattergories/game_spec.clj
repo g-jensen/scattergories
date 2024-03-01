@@ -20,8 +20,37 @@
   (with-stubs)
   (ds/init-with-schemas)
 
+  (context "run-round!"
+    (redefs-around [sut/sleep!                (stub :sleep!)
+                    dispatch/push-to-players! (stub :push-to-players!)])
+    (tags :slow)
+
+    (it "waits for 3 minutes"
+      (with-redefs [sut/all-submitted? (constantly true)]
+        (sut/-run-round @firelink sut/timeout)
+        (should-have-invoked :sleep! {:with [180000]})))
+
+    (it "waits for answers to come in and then dispatches"
+      (playerc/add-answers! @lautrec {"category1" "lautrec answer"})
+      (playerc/add-answers! @frampt {"category1" "frampt answer"})
+      (future (Thread/sleep 300)
+              (playerc/add-answers! @patches {"category1" "patches answer"}))
+      (sut/-run-round @firelink sut/timeout)
+      (let [answers (roomc/find-answers @firelink)
+            players (map db/entity (:players @firelink))]
+        (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                       :room/update
+                                                       (cons (assoc @firelink :state :reviewing)
+                                                             (concat players answers))]})
+        (should= :reviewing (:state @firelink))))
+
+    (it "does not wait for longer than timeout"
+      (sut/-run-round @firelink 300)
+      (should 1)))
+
   (context "ws-start-game"
-    (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
+    (redefs-around [sut/run-round!            (stub :run-round!)
+                    dispatch/push-to-players! (stub :push-to-players!)])
 
     (it "fails if connection-id is not host"
       (let [non-host-player @patches
@@ -63,7 +92,11 @@
         (should= :ok (:status response))
         (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
                                                        :room/update
-                                                       [@firelink]]}))))
+                                                       [@firelink]]})))
+
+    (it "runs round"
+      (sut/ws-start-game {:connection-id (:conn-id @lautrec)})
+      (should-have-invoked :run-round! {:with [@firelink 15000]})))
 
   (context "ws-submit-answers"
 

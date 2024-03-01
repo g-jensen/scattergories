@@ -97,5 +97,12 @@
       (sut/leave-room! @firelink @lautrec)
       (should= (:id @frampt) (:host @firelink))))
 
+  (it "find-answers"
+    (playerc/add-answers! @lautrec {"category1" "lautrec answer"})
+    (playerc/add-answers! @patches {"category1" "patches answer"})
+    (let [answers (sut/find-answers @firelink)]
+      (should= ["lautrec answer" "patches answer"]
+               (map :answer answers))))
+
   (it "finds room by player"
     (should= @firelink (roomc/by-player @lautrec))))

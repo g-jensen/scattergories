@@ -1,7 +1,8 @@
 (ns scattergories.playerc
-  (:require [c3kit.apron.schema :as schema]
+  (:require [c3kit.apron.corec :as ccc]
+            [c3kit.apron.schema :as schema]
             [c3kit.bucket.api :as db]
-            [scattergories.answerc :as answerc]
+            [scattergories.answerc :as answerc :refer [create-answer!]]
             [scattergories.schema.player :as player]))
 
 (defn ->player
@@ -17,7 +18,7 @@
   ([nickname conn-id] (db/tx (->player nickname conn-id))))
 
 (defn add-answers! [player answers]
-  (let [answers (map answerc/create-answer! answers)]
+  (let [answers (ccc/map-all answerc/create-answer! answers)]
     (db/tx (assoc player :answers (map :id answers)))))
 
 (defn or-id [player-or-id]

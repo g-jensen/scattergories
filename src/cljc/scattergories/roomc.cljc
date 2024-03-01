@@ -45,6 +45,18 @@
         room (assoc room :host host)]
     (db/tx room)))
 
+(defn or-id [player-or-id]
+  ((some-fn :id identity) player-or-id))
+
+(defn find-answers [room]
+  (let [room-id (or-id room)
+        room    (db/entity room-id)
+        players (map db/entity (:players room))
+        answer-ids (->> (map :answers players)
+                        flatten
+                        (remove nil?))]
+    (map db/entity answer-ids)))
+
 (defn by-code [code]
   (db/ffind-by :room :code code))
 (defn by-player [player]
