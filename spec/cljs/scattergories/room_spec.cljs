@@ -39,20 +39,24 @@
     (should-have-invoked :ws/call! {:with [:room/fetch {:room-code "A8SBLK"} db/tx*]}))
 
   (context "maybe render room"
-    (before (wire/render [sut/maybe-render-room state/room state/nickname]))
+    (before (wire/render [sut/maybe-render-room room-ratom state/nickname]))
 
     (it "renders error if no room"
+      (reset! room-ratom nil)
+      (wire/flush)
       (should-select "#-room-not-found")
       (should-not-select "#-prompt-or-room"))
 
-    ; once it works, it will probably fail ^this test
-    ; TODO - [GMJ] Figure out why db/tx doesn't work in specs
-    #_(it "renders room if found"
-      (prn "depths" @ds/depths-atom)
-      (db/tx @ds/depths-atom)
-      (flush)
-      (should-not-select "#-room-not-found")
-      (should-select "#-prompt-or-room")))
+    (it "renders error if trying to join when room already started"
+      (with-redefs [sut/get-me (constantly nil)]
+        (should-select "#-room-started")))
+
+    (it "renders room"
+      (with-redefs [sut/get-me (constantly @ds/frampt-atom)]
+        (wire/render [sut/maybe-render-room room-ratom state/nickname])
+        (should-not-select "#-room-started")
+        (should-not-select "#-room-not-found")
+        (should-select "#-prompt-or-room"))))
 
   (context "nickname prompt or room"
     (before (wire/render [sut/nickname-prompt-or-room state/nickname]))

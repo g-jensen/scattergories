@@ -92,7 +92,7 @@
                            [:p category]
                            [:input {:type "text"
                                     :id (str "-" category)}]]))]
-          [:h1 {:id "-submitting"} "Submitting results..."])])})))
+          [:h1 {:id "-submitting"} "Tallying results..."])])})))
 
 (defn room [room-ratom players-ratom]
   [:div.main-container
@@ -125,10 +125,16 @@
             {:room-code (:room-code @page/state)}
             db/tx*))
 
+(defn- lobby? [room]
+  (= :lobby (:state room)))
+
 (defn maybe-render-room [room-ratom]
-  (if @room-ratom
-    [nickname-prompt-or-room state/nickname]
-    [:h1 {:id "-room-not-found"} "Room not found!"]))
+  (prn "room" @room-ratom)
+  (if-not @room-ratom
+    [:h1 {:id "-room-not-found"} "Room not found!"]
+    (if (or (lobby? @room-ratom) (get-me))
+      [nickname-prompt-or-room state/nickname]
+      [:h1 {:id "-room-started"} "Room as already started. Try joining back later."])))
 
 (defmethod page/entering! :room [_]
   (fetch-room))
