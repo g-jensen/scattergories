@@ -1,7 +1,6 @@
 (ns scattergories.roomc-spec
   (:require [c3kit.apron.utilc :as utilc]
             [c3kit.bucket.api :as db]
-            [scattergories.categories :as categories]
             [scattergories.dark-souls :as ds :refer [firelink depths lautrec laurentius frampt patches]]
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as roomc]
@@ -91,17 +90,6 @@
     (it "sets host to next player if many"
       (sut/leave-room! @firelink @lautrec)
       (should= (:id @frampt) (:host @firelink))))
-
-  (context "categories"
-    (redefs-around [shuffle (stub :shuffle {:invoke reverse})
-                    categories/categories (take 10 (map str (range 0 10)))])
-
-    (it "gets random categories"
-      (prn "categories/categories: " categories/categories)
-      (should= ["9" "8" "7"] (take 3 (sut/categories))))
-
-    #_(it "doesn't repeat"
-      ))
 
   (it "finds room by player"
     (should= @firelink (roomc/by-player @lautrec))))

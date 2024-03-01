@@ -10,7 +10,7 @@
 
 (defn start-round! [room]
   (let [room (-> (roomc/start room)
-                 (assoc :categories (take 10 (roomc/categories)))
+                 (assoc :categories (take 10 (room/categories)))
                  (assoc :round-start (time/now)))]
     (db/tx room)))
 

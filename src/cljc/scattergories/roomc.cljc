@@ -2,7 +2,6 @@
   (:require [c3kit.apron.utilc :as utilc]
             [c3kit.apron.corec :as ccc]
             [c3kit.bucket.api :as db]
-            [scattergories.categories :as categories]
             [scattergories.playerc :as playerc]))
 
 (defn ->room [code]
@@ -40,9 +39,6 @@
         host (first (:players room))
         room (assoc room :host host)]
     (db/tx room)))
-
-(defn categories []
-  (shuffle categories/categories))
 
 (defn by-code [code]
   (db/ffind-by :room :code code))

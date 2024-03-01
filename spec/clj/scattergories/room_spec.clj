@@ -4,6 +4,7 @@
             [c3kit.bucket.spec-helperc :as helperc]
             [c3kit.wire.apic :as apic]
             [c3kit.wire.websocket :as ws]
+            [scattergories.categories :as categories]
             [scattergories.dark-souls :as ds :refer [firelink depths lautrec frampt patches]]
             [scattergories.dispatch :as dispatch]
             [scattergories.playerc :as playerc]
@@ -124,4 +125,15 @@
       (let [[_ crow] (:payload (sut/ws-join-room {:params {:nickname "Giant Crow" :room-code ds/depths-code}}))
             response (sut/ws-fetch-room {:params {:room-code ds/depths-code}})]
         (should= :ok (:status response))
-        (should= [@ds/depths crow] (:payload response))))))
+        (should= [@ds/depths crow] (:payload response)))))
+
+  (context "categories"
+    (redefs-around [shuffle (stub :shuffle {:invoke reverse})
+                    categories/categories (take 10 (map str (range 0 10)))])
+
+    (it "gets random categories"
+      (prn "categories/categories: " categories/categories)
+      (should= ["9" "8" "7"] (take 3 (sut/categories))))
+
+    #_(it "doesn't repeat"
+        )))

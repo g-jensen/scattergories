@@ -1,6 +1,7 @@
 (ns scattergories.room
   (:require [c3kit.bucket.api :as db]
             [c3kit.wire.apic :as apic]
+            [scattergories.categories :as categories]
             [scattergories.dispatch :as dispatch]
             [scattergories.playerc :as playerc]
             [scattergories.roomc :as roomc]))
@@ -24,6 +25,9 @@
   (->> (repeatedly new-code)
        (remove #(db/ffind-by :room :code %))
        first))
+
+(defn categories []
+  (shuffle categories/categories))
 
 (defn ws-create-room [{:keys [params] :as request}]
   (with-lock
