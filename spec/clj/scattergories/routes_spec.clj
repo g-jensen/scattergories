@@ -66,7 +66,8 @@
   (test-webs :room/fetch           scattergories.room/ws-fetch-room)
   (test-webs :game/start           scattergories.game/ws-start-game)
   (test-webs :game/submit-answers  scattergories.game/ws-submit-answers)
-  (test-webs :game/update-answer  scattergories.game/ws-update-answer)
+  (test-webs :game/update-answer   scattergories.game/ws-update-answer)
+  (test-webs :game/next-category   scattergories.game/ws-next-category)
 
   (it "not-found global - nil - handled by http"
     (let [response (routes/handler {:uri "/blah" :request-method :get})]

@@ -117,14 +117,14 @@
         (reset! players-ratom [@ds/frampt-atom])
         (reset! room-ratom {:host (:id @ds/frampt-atom)})
         (wire/flush)
-        (should= "Kingseeker Frampt (Host)" (wire/html (str "#-player-" (:id @ds/frampt-atom)))))
+        (should= "Kingseeker Frampt (Host) | 0" (wire/html (str "#-player-" (:id @ds/frampt-atom)))))
 
       (it "with multiple players"
         (reset! players-ratom [@ds/frampt-atom @ds/lautrec-atom])
         (reset! room-ratom {:host (:id @ds/frampt-atom)})
         (wire/flush)
-        (should= "Kingseeker Frampt (Host)" (wire/html (str "#-player-" (:id @ds/frampt-atom))))
-        (should= "Lautrec" (wire/html (str "#-player-" (:id @ds/lautrec-atom))))))
+        (should= "Kingseeker Frampt (Host) | 0" (wire/html (str "#-player-" (:id @ds/frampt-atom))))
+        (should= "Lautrec | 0" (wire/html (str "#-player-" (:id @ds/lautrec-atom))))))
 
     (context "waiting"
       (context "start button"

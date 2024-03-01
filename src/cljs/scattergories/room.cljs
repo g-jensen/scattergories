@@ -109,14 +109,15 @@
     :else "red"))
 
 (defn reviewing [room-ratom]
-  (let [idx 0
+  (let [idx (:category-idx @room-ratom)
         category (nth (:categories @room-ratom) idx 0)]
     [:<>
      [:h2.text-align-center "Results"]
      [:h2.categories-data.text-align-center (str "Letter: " (:letter @room-ratom))]
      [:h2.categories-data.text-align-center (str "Category: " category)]
      (when (host? @room-ratom (get-me))
-      [:button "Next Category"])
+      [:button {:on-click #(ws/call! :game/next-category {} ccc/noop)}
+       "Next Category"])
      (util/with-react-keys
        (ccc/for-all [player @state/players]
          (let [answers (db/find-by :answer :player (:id player))
@@ -133,6 +134,7 @@
             [:p {:style {:color (get-color answer)}} (str (:nickname player) ": " (:answer answer))]])))]))
 
 (defn room [room-ratom players-ratom]
+  (prn "@players-ratom: " @players-ratom)
   [:div.main-container
    {:id "-room"}
    [:div.left-container
@@ -144,7 +146,7 @@
       (ccc/for-all [player @players-ratom]
         [:li {:key (:id player)
               :id  (str "-player-" (:id player))}
-         (str (:nickname player) (when (host? @room-ratom player) " (Host)"))])]]]
+         (str (:nickname player) (when (host? @room-ratom player) " (Host)") " | " (:points player))])]]]
    [:div.center
     [:div.game-container
      [:h1 "Scattergories"]
