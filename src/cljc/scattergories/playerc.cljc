@@ -17,8 +17,8 @@
   ([nickname conn-id] (db/tx (->player nickname conn-id))))
 
 (defn add-answers! [player answers]
-  (let [answers (map answerc/->answer answers)]
-    (db/tx (assoc player :answers answers))))
+  (let [answers (map answerc/create-answer! answers)]
+    (db/tx (assoc player :answers (map :id answers)))))
 
 (defn or-id [player-or-id]
   ((some-fn :id identity) player-or-id))

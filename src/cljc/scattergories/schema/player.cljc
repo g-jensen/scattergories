@@ -3,6 +3,7 @@
 
 (def answer
   {:kind     (s/kind :answer)
+   :id       s/id
    :category {:type :string :validate s/present? :message "must be present"}
    :answer   {:type :string :validate s/present? :message "must be present"}})
 
@@ -11,7 +12,7 @@
    :id       s/id
    :nickname {:type :string :validate s/present? :message "must be present"}
    :conn-id  {:type :string :message "must be a string"}
-   :answers  {:type [answer]}
+   :answers  {:type [:long]}
    })
 
 (def all [answer player])

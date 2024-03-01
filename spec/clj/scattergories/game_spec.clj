@@ -87,4 +87,5 @@
                                              :connection-id (:conn-id @patches)})]
         (should= :ok (:status response))
         (should= nil (:payload response))
-        (should= (map answerc/->answer answers) (:answers @patches))))))
+        (let [answers (db/find :answer)]
+          (should= (map :id answers) (:answers @patches)))))))

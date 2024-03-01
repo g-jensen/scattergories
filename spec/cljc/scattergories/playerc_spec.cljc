@@ -1,5 +1,6 @@
 (ns scattergories.playerc_spec
-  (:require [scattergories.playerc :as sut]
+  (:require [c3kit.bucket.api :as db]
+            [scattergories.playerc :as sut]
             [scattergories.dark-souls :as ds :refer [lautrec]]
             [speclj.core #?(:clj :refer :cljs :refer-macros) [describe context it should=]]))
 
@@ -37,16 +38,12 @@
 
     (it "one answer"
       (sut/add-answers! @lautrec {"category1" "answer1"})
-      (should= [{:kind :answer
-                 :category "category1"
-                 :answer   "answer1"}]
-               (:answers @lautrec)))
+      (let [answer (db/ffind :answer)]
+        (should= [(:id answer)] (:answers @lautrec))))
 
     (it "many answers"
       (sut/add-answers! @lautrec {"category1" "answer1"
                                   "category2" "answer2"
                                   "category3" "answer3"})
-      (should= [{:kind :answer :category "category1" :answer "answer1"}
-                {:kind :answer :category "category2" :answer "answer2"}
-                {:kind :answer :category "category3" :answer "answer3"}]
-               (:answers @lautrec)))));
+      (let [answers (db/find :answer)]
+        (should= (map :id answers) (:answers @lautrec))))));
