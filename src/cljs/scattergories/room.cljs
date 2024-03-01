@@ -105,8 +105,8 @@
 (defn get-color [answer]
   (cond
     (= :bonus (:state answer)) "green"
-    (= :declined (:state answer)) "red"
-    :else "black"))
+    (= :accepted (:state answer)) "black"
+    :else "red"))
 
 (defn reviewing [room-ratom]
   (let [idx 0
@@ -125,7 +125,7 @@
                change-accepted #(ws/call! :game/update-answer {:answer-id (:id answer) :state :accepted} ccc/noop)
                change-declined #(ws/call! :game/update-answer {:answer-id (:id answer) :state :declined} ccc/noop)]
            [:div
-            (when (host? @room-ratom (get-me))
+            (when (and (host? @room-ratom (get-me)) (some? answer))
               [:<>
                [:button.small-button.green-button {:on-click change-bonus} " "]
                [:button.small-button.gray-button {:on-click change-accepted} " "]
