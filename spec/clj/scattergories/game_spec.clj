@@ -40,11 +40,16 @@
         (should= :ok (:status response))
         (should= :started (:state (:payload response)))))
 
+    (it "adds letter"
+      (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
+        (should= :ok (:status response))
+        (should-contain (:letter (:payload response)) roomc/letters)))
+
     (it "includes categories"
       (with-redefs [shuffle               (stub :shuffle {:invoke reverse})
                     categories/categories (map str (range 0 100))]
         (let [response (sut/ws-start-game {:connection-id (:conn-id @lautrec)})]
-          (should= (map str (reverse (range 90 100))) (:categories (:payload response))))))
+          (should= (map str (reverse (range 88 100))) (:categories (:payload response))))))
 
     (it "includes round start time"
       (with-redefs [time/now (constantly (time/now))]

@@ -23,6 +23,11 @@
 (defn start [room]
   (assoc room :state :started))
 
+(def letters ["A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "R" "S" "T" "W"])
+(defn add-letter [room]
+  (let [letter (first (shuffle letters))]
+    (assoc room :letter letter)))
+
 (defn remove-player [{:keys [players] :as room} player]
   (let [id (playerc/or-id player)
         players (remove #{id} players)]

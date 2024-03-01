@@ -7,8 +7,11 @@
    :code        {:type :string :validate s/present? :message "must be present"}
    :host        {:type :long}
    :players     {:type [:long] :validate s/present? :message "must be present"}
+
    :state       {:type :keyword :validate s/present? :message "must be present"}
+
    :round-start {:type :instant}
+   :letter      {:type :string}
    :categories  {:type [:string]}
    })
 

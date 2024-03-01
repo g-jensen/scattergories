@@ -39,8 +39,14 @@
 
   (context "state"
 
-    (it "start!"
+    (it "start"
       (should= :started (:state (sut/start @firelink)))))
+
+  (context "letter"
+    (redefs-around [shuffle reverse])
+
+    (it "picks random letter (excluding Q U V X Y Z)"
+      (should= "W" (:letter (sut/add-letter @firelink)))))
 
   (context "join-room!"
 
