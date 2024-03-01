@@ -127,14 +127,14 @@
     (redefs-around [dispatch/push-to-players! (stub :push-to-players!)])
 
     (it "fails if answer not found"
-      (let [response (sut/ws-update-answer {:payload       {:answer-id :not-an-id
+      (let [response (sut/ws-update-answer {:params       {:answer-id :not-an-id
                                                             :state     :bonus}
                                             :connection-id (:conn-id @lautrec)})]
         (should= :fail (:status response))
         (should= "Answer not found!" (apic/flash-text response 0))))
 
     (it "fails if state is invalid"
-      (let [response (sut/ws-update-answer {:payload       {:answer-id :not-an-id
+      (let [response (sut/ws-update-answer {:params       {:answer-id :not-an-id
                                                             :state     :blah}
                                             :connection-id (:conn-id @lautrec)})]
         (should= :fail (:status response))
@@ -143,7 +143,7 @@
     (it "saves new answer state"
       (playerc/add-answers! @lautrec {"category1" "lautrec answer"})
       (let [answer   (first (answerc/by-player @lautrec))
-            response (sut/ws-update-answer {:payload       {:answer-id (:id answer)
+            response (sut/ws-update-answer {:params       {:answer-id (:id answer)
                                                             :state     :bonus}
                                             :connection-id (:conn-id @lautrec)})]
         (should= :ok (:status response))
@@ -152,7 +152,7 @@
     (it "dispatches new answer state to players"
       (playerc/add-answers! @lautrec {"category1" "lautrec answer"})
       (let [answer   (first (answerc/by-player @lautrec))]
-        (sut/ws-update-answer {:payload       {:answer-id (:id answer)
+        (sut/ws-update-answer {:params       {:answer-id (:id answer)
                                                :state     :bonus}
                                :connection-id (:conn-id @lautrec)})
         (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
