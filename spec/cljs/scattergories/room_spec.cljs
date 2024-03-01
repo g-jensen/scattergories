@@ -2,6 +2,7 @@
   (:require-macros [speclj.core :refer [redefs-around around stub should-have-invoked should-not-have-invoked with-stubs describe context it should= should-be-nil should-contain should should-not before should-not-be-nil]]
                    [c3kit.wire.spec-helperc :refer [should-not-select should-select]])
   (:require [accountant.core :as accountant]
+            [c3kit.apron.time :as time]
             [c3kit.wire.js :as wjs]
             [reagent.core :as reagent]
             [scattergories.dark-souls :as ds]
@@ -14,7 +15,7 @@
             [c3kit.wire.websocket :as ws]))
 
 (def players-ratom (reagent/atom []))
-(def room-ratom (reagent/atom nil))
+(def room-ratom (reagent/atom {}))
 
 (describe "Room"
   (init/install-reagent-db-atom!)
@@ -28,7 +29,7 @@
           (db/clear)
           (reset! state/nickname nil)
           (reset! players-ratom [])
-          (reset! room-ratom nil))
+          (reset! room-ratom {}))
 
 
   (it "fetches room on enter"
@@ -112,34 +113,63 @@
         (reset! players-ratom [@ds/frampt-atom])
         (reset! room-ratom {:host (:id @ds/frampt-atom)})
         (wire/flush)
-        (should-select (str "#-player-" (:id @ds/frampt-atom)))
         (should= "Kingseeker Frampt (Host)" (wire/html (str "#-player-" (:id @ds/frampt-atom)))))
 
       (it "with multiple players"
         (reset! players-ratom [@ds/frampt-atom @ds/lautrec-atom])
         (reset! room-ratom {:host (:id @ds/frampt-atom)})
         (wire/flush)
-        (should-select (str "#-player-" (:id @ds/frampt-atom)))
-        (should-select (str "#-player-" (:id @ds/lautrec-atom)))
         (should= "Kingseeker Frampt (Host)" (wire/html (str "#-player-" (:id @ds/frampt-atom))))
         (should= "Lautrec" (wire/html (str "#-player-" (:id @ds/lautrec-atom))))))
 
-    (context "start button"
-      (redefs-around [sut/get-me (fn [] @ds/frampt-atom)])
-      (before (reset! players-ratom [@ds/frampt-atom @ds/lautrec-atom]))
+    (context "waiting"
+      (context "start button"
+        (redefs-around [sut/get-me (fn [] @ds/frampt-atom)])
+        (before (reset! players-ratom [@ds/frampt-atom @ds/lautrec-atom]))
 
-      (it "does display if user is host"
-        (reset! room-ratom {:host (:id @ds/frampt-atom)})
-        (wire/flush)
-        (should-select "#-start-button"))
+        (it "does display if user is host"
+          (reset! room-ratom {:host (:id @ds/frampt-atom)})
+          (wire/flush)
+          (should-select "#-start-button"))
 
-      (it "doesn't display if user is not host"
-        (reset! room-ratom {:host (:id @ds/lautrec-atom)})
-        (wire/flush)
-        (should-not-select "#-start-button"))
+        (it "doesn't display if user is not host"
+          (reset! room-ratom {:host (:id @ds/lautrec-atom)})
+          (wire/flush)
+          (should-not-select "#-start-button"))
 
-      (it "starts game on click"
-        (reset! room-ratom {:host (:id @ds/frampt-atom)})
+        (it "starts game on click"
+          (reset! room-ratom {:host (:id @ds/frampt-atom)})
+          (wire/flush)
+          (wire/click! "#-start-button")
+          (should-have-invoked :ws/call! {:with [:game/start {} db/tx]}))))
+
+    (context "playing"
+      (before (swap! room-ratom assoc
+                     :state :started
+                     :letter nil
+                     :round-start (js/Date. 0)
+                     :categories []))
+
+      (it "renders letter"
+        (swap! room-ratom assoc :letter "K")
         (wire/flush)
-        (wire/click! "#-start-button")
-        (should-have-invoked :ws/call! {:with [:game/start {} db/tx]})))))
+        (should= "K" (wire/html "#-letter"))
+        (swap! room-ratom assoc :letter "M")
+        (wire/flush)
+        (should= "M" (wire/html "#-letter")))
+
+      (it "renders time left"
+        (with-redefs [wjs/interval (stub :interval)
+                      time/now (constantly (time/now))]
+          (swap! room-ratom assoc :round-start (time/now))
+          (wire/render [sut/room room-ratom players-ratom])
+          (wire/flush)
+          (should-have-invoked :interval)
+          (should= "180" (wire/html "#time"))))
+
+      (it "renders categories"
+        (swap! room-ratom assoc :categories ["dogs" "cats" "others"])
+        (wire/flush)
+        (should-select "#-dogs")
+        (should-select "#-cats")
+        (should-select "#-others")))))

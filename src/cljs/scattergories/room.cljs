@@ -1,6 +1,8 @@
 (ns scattergories.room
   (:require [c3kit.apron.corec :as ccc]
+            [c3kit.apron.time :as time]
             [c3kit.wire.js :as wjs]
+            [c3kit.wire.util :as util]
             [c3kit.wire.websocket :as ws]
             [clojure.string :as str]
             [reagent.core :as reagent]
@@ -9,7 +11,8 @@
             [c3kit.bucket.api :as db]
             [scattergories.page :as page]
             [scattergories.playerc :as playerc]
-            [scattergories.state :as state]))
+            [scattergories.state :as state]
+            [scattergories.gamec :as gamec]))
 
 (defn- join-room! []
   (when (not (str/blank? @state/nickname))
@@ -53,21 +56,31 @@
       [:button {:id "-start-button"
                 :on-click #(ws/call! :game/start {} db/tx)} "Start Game"]])])
 
+(defn get-time-left [room]
+  (str (time/millis->seconds (time/millis-between
+                               (time/after (:round-start room) gamec/round-length)
+                               (time/now)))))
+
 (defn playing [room-ratom]
-  [:<>
-   [:div.letter-display
-    [:h2.categories-data "Letter: " [:span#letter "A"]]]
-   [:div.timer
-    [:h2.categories-data "Time Left: " [:span#time "180"] " seconds"]]
-   [:div.categories
-    [:p "Color:"]
-    [:input {:type "text" :id "Color" :name "Color"}]
-    [:p "Animal:"]
-    [:input {:type "text" :id "Animal" :name "Animal"}]
-    [:p "Food:"]
-    [:input {:type "text" :id "Food" :name "Food"}]
-    [:p "Really:"]
-    [:input {:type "text" :id "Really long name" :name "Really long name"}]]])
+  (let [interval (atom nil)
+        time-left (reagent/atom (get-time-left @room-ratom))]
+    (reagent/create-class
+    {:component-did-mount    (fn [_] (reset! interval (wjs/interval (time/seconds 1) #(reset! time-left (get-time-left @room-ratom)))))
+     :component-will-unmount (fn [_] (when @interval (wjs/clear-interval @interval)))
+     :reagent-render
+     (fn [room-ratom]
+       [:<>
+        [:div.letter-display
+         [:h2.categories-data "Letter: " [:span#letter {:id "-letter"} (:letter @room-ratom)]]]
+        [:div.timer
+         [:h2.categories-data "Time Left: " [:span#time @time-left] " seconds"]]
+        [:div.categories
+         (util/with-react-keys
+           (ccc/for-all [category (:categories @room-ratom)]
+                        [:<>
+                         [:p category]
+                         [:input {:type "text"
+                                  :id (str "-" category)}]]))]])})))
 
 (defn room [room-ratom players-ratom]
   [:div.main-container
