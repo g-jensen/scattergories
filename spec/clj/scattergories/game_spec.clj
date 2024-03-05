@@ -204,4 +204,5 @@
       (should= 0 (:points @patches))
       (should= :lobby (:state @firelink))
       (should (empty? (roomc/find-answers @firelink)))
+      (should= [] (db/find :answer))
       )))
