@@ -62,7 +62,7 @@
         answer-ids (->> (map :answers players)
                         flatten
                         (remove nil?))]
-    (map db/entity answer-ids)))
+    (mapv db/entity answer-ids)))
 
 (defn by-code [code]
   (db/ffind-by :room :code code))

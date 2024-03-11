@@ -99,8 +99,10 @@
 
 (defn maybe-remove-answers [room players]
   (when (= :lobby (:state room))
-    (let [answers (flatten (map :answers players))]
-      (doseq [answer answers] (db/delete :answer answer)))
+    (let [answers (remove nil? (flatten (map :answers players)))
+          deleted-answers (ccc/map-all #(db/delete :answer %) answers)]
+      (prn "deleted" deleted-answers)
+      (room/push-to-room! room deleted-answers))
     (db/tx* (map #(dissoc % :answers) players))))
 
 (defn ws-next-category [{:keys [connection-id] :as request}]

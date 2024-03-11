@@ -204,5 +204,17 @@
       (should= 0 (:points @patches))
       (should= :lobby (:state @firelink))
       (should (empty? (roomc/find-answers @firelink)))
-      (should= [] (db/find :answer))
-      )))
+      (should= [] (db/find :answer)))
+    
+    (it "dispatches reset answers to room if last category index" 
+          (db/tx (roomc/next-category-idx (assoc @firelink :state :reviewing
+                                                 :categories (mapv str (range 0 1)))))
+          (playerc/add-answers! @lautrec {"0" "lautrec answer 1"})
+          (playerc/add-answers! @frampt {"0" "frampt answer"})
+          (let [answers (mapv :id (roomc/find-answers @firelink))
+                deleted (map (fn [id] {:kind :answer :id id :db/delete? true}) answers)] 
+            (prn "test deleted" deleted)
+            (sut/ws-next-category {:connection-id (:conn-id @lautrec)})
+            (should-have-invoked :push-to-players! {:with [(map db/entity (:players @firelink))
+                                                           :room/update
+                                                           deleted]})))))
